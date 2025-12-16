@@ -1,77 +1,684 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './AdminPage.css';
 
-function AdminPage() {
-  const navigate = useNavigate();
+function AdminPage({ onSaveConfig }) {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [stories, setStories] = useState([]);
-  const [currentStory, setCurrentStory] = useState({
-    id: Date.now().toString(),
-    storyTitle: '',
-    description: '',
-    tags: [],
-    thumbnailImage: '',
-    characterA: { name: '', age: '', role: '공', occupation: '', personality: '', appearance: '', profileImage: '' },
-    characterB: { name: '', age: '', role: '수', occupation: '', personality: '', appearance: '', profileImage: '' },
-    backgroundImages: { 0: '', 20: '', 40: '', 60: '', 80: '' },
-    keywordImages: [],
-    isPublished: false
+  
+  // 앱 설정
+  const [appSettings, setAppSettings] = useState({
+    icon: null,
+    iconPreview: '🐱',
+    fontFamily: 'Malgun Gothic',
+    customFont: '' // 커스텀 폰트 추가
   });
 
-  useEffect(() => {
-    const savedStories = localStorage.getItem('kind_cat_stories');
-    if (savedStories) {
-      setStories(JSON.parse(savedStories));
+  // 캐릭터 A (공)
+  const [charA, setCharA] = useState({
+    name: '강주혁',
+    age: '35',
+    role: '공',
+    personality: '냉혈함, 완벽주의/강박적, 집착적',
+    occupation: '외과 의사 (병원장 아들)',
+    appearance: '깊은 아이홀과 짙은 흑발, 푸른 눈동자, 날카로운 턱선. 188cm의 압도적 키와 거대한 근육질 체형, 떡 벌어진 어깨와 탄탄한 가슴 근육. 깔끔하게 넘긴 흑발, 혈관이 도드라진 팔뚝',
+    bodyDetails: {
+      height: '188cm',
+      build: '거대한 근육질',
+      features: '떡 벌어진 어깨, 탄탄한 가슴 근육, 혈관이 도드라진 팔뚝, 넓은 손'
+    },
+    speech: '짧고 단정적이며 권위적. 감정을 숨긴 채 관찰하듯 말하며 통제적인 명령조',
+    callingSystem: {
+      affection_0_20: '윤태이 씨',
+      affection_21_40: '윤태이 씨',
+      affection_41_60: '태이',
+      affection_61_80: '너',
+      affection_81_100: '내 거'
+    },
+    avatar: null,
+    avatarPreview: 'https://placehold.co/100x100/C9395A/FFFFFF?text=JH',
+    sexualDetails: {
+      genital: '굵고 압도적인 형태, 뜨거운 체온, 탄탄한 근육',
+      body: '거대한 근육질, 넓은 손, 강한 악력',
+      scent: '진한 사향/머스크',
+      special: '알파 페로몬 분비, 교미 본능, 매듭 형성'
+    },
+    tags: ['#알파공', '#냉혈공', '#떡대공', '#연상공'],
+    preferredActions: ['수치심을 유발하는 지시', '발정기 중 태이의 신음', '유두나 목덜미에 흔적 남기기', '정신적인 압박', '수술복을 입고 유희'],
+    avoidedActions: ['태이가 필사적으로 거부하는 것', '감정적인 호소', '업무 중 중대한 실수', '예상치 못한 다정함'],
+    // 공개/비공개 설정
+    visibility: {
+      basicInfo: true,
+      sexualDetails: false,
+      tags: true,
+      actions: false
     }
-  }, []);
+  });
 
-  const handleLogin = () => {
-    if (password === 'admin123') {
+  // 캐릭터 B (수)
+  const [charB, setCharB] = useState({
+    name: '윤태이',
+    age: '24',
+    role: '수',
+    personality: '경계심 강함, 완벽주의/강박적, 내향적/사회성 결여',
+    occupation: '신입 간호사',
+    appearance: '정돈된 금발과 깨끗한 피부, 인형 같은 얼굴. 짙은 쌍꺼풀과 둥근 눈매지만 감정을 숨긴 가는 눈매. 175-179cm 슬림탄탄 체형, 얇지만 탄탄한 허리와 잘록한 허리. 밀크빛 하얀 피부는 쉽게 붉어지는 민감 체질',
+    bodyDetails: {
+      height: '175-179cm',
+      build: '슬림탄탄',
+      features: '잘록한 허리, 밀크빛 하얀 피부, 쉽게 붉어지는 민감 체질'
+    },
+    speech: '사무적이고 공손한 존댓말. 감정을 드러내지 않기 위해 절제되고 딱딱함',
+    callingSystem: {
+      affection_0_20: '과장님',
+      affection_21_40: '선생님',
+      affection_41_60: '강주혁 선생님',
+      affection_61_80: '주혁 씨',
+      affection_81_100: '주혁아'
+    },
+    avatar: null,
+    avatarPreview: 'https://placehold.co/100x100/E8749B/FFFFFF?text=TY',
+    sexualDetails: {
+      hole: '쪼이는 힘 매우 강함, 슬릭 과다 분비, 깊은 곳만 민감',
+      reactions: '수치심=흥분, 쉽게 붉어지는 피부, 발작적 경련, 눈물 흘림',
+      nipple: '도드라지는 유두 극도 민감 (옷에 쓸려도 반응)',
+      genital: '평균 크기',
+      scent: '달콤한 코코넛/복숭아',
+      body: '',
+      special: '오메가 발정기, 슬릭 과다 분비, 달콤한 오메가 페로몬 (코코넛/복숭아 향), 임신 가능'
+    },
+    tags: ['#오메가수', '#까칠수', '#미인수', '#동정수'],
+    preferredActions: ['자신이 통제할 수 없는 쾌감', '억제제 풀리고 페로몬 충족', '은밀한 부위 노출', '특정 부위 섬세한 자극', '마지못한 순종'],
+    avoidedActions: ['강주혁의 다정한 행동', '병원 내 사적 접촉', '과거 상처 들추기', '의지와 무관한 신체 반응 노출'],
+    // 공개/비공개 설정
+    visibility: {
+      basicInfo: true,
+      sexualDetails: false,
+      tags: true,
+      actions: false
+    }
+  });
+
+  // 시나리오
+  const [scenario, setScenario] = useState({
+    title: '오피스 로맨스',
+    description: '냉혈한 상사와 까칠한 신입 사원의 위험한 사내연애',
+    relationship: '상사와 부하',
+    location: '회사 대표이사실',
+    situation: '야근 중 둘만 남게 된 상황',
+    time: '밤 10시',
+    narrativePattern: 'A', // 서사 패턴 (A~H)
+    // 작품 태그
+    storyTags: {
+      genre: ['#로맨스', '#오피스'],
+      mood: ['#달달', '#긴장감'],
+      situation: ['#첫만남', '#짝사랑']
+    }
+  });
+
+  // 이미지
+  const [images, setImages] = useState([
+    { id: 1, threshold: 20, name: '첫 만남', file: null, preview: null },
+    { id: 2, threshold: 40, name: '친밀해짐', file: null, preview: null },
+    { id: 3, threshold: 60, name: '설레는 순간', file: null, preview: null },
+    { id: 4, threshold: 80, name: '깊어지는 관계', file: null, preview: null },
+    { id: 5, threshold: 100, name: '완전한 신뢰', file: null, preview: null }
+  ]);
+
+  const AVAILABLE_FONTS = [
+    'Malgun Gothic',
+    'Noto Sans KR',
+    'Nanum Gothic',
+    'Nanum Myeongjo',
+    'Black Han Sans',
+    'Do Hyeon',
+    'Jua',
+    'Sunflower',
+    '커스텀 (직접 입력)'
+  ];
+
+  const COMMON_TAGS_GONG = [
+    '#냉혈공', '#재벌공', '#강공', '#광공', '#집착공',
+    '#절륜공', '#능글공', '#다정공', '#헌신공', '#연상공'
+  ];
+
+  const COMMON_TAGS_SU = [
+    '#까칠수', '#순수수', '#다정수', '#헌신수', '#유혹수',
+    '#상처수', '#자낮수', '#공이었수', '#츤데레', '#연상수'
+  ];
+
+  // 작품 태그 옵션
+  const STORY_TAG_OPTIONS = {
+    genre: [
+      '#로맨스', '#오피스', '#학원', '#판타지', '#현대물',
+      '#시대물', '#SF', '#스릴러', '#코미디', '#19금'
+    ],
+    mood: [
+      '#달달', '#긴장감', '#애절', '#유쾌', '#어둡',
+      '#몽환적', '#현실적', '#센슈얼', '#순애', '#집착'
+    ],
+    situation: [
+      '#첫만남', '#재회', '#짝사랑', '#양편사랑', '#삼각관계',
+      '#금지된사랑', '#계약연애', '#동거', '#출장', '#비밀연애'
+    ]
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (password === 'admin1234') {
       setIsAuthenticated(true);
     } else {
-      alert('비밀번호가 틀렸습니다.');
+      alert('비밀번호가 틀렸습니다!');
     }
   };
 
-  const saveStory = () => {
-    const updated = stories.filter(s => s.id !== currentStory.id);
-    const newStories = [...updated, currentStory];
-    setStories(newStories);
-    localStorage.setItem('kind_cat_stories', JSON.stringify(newStories));
-    alert('저장되었습니다!');
+  const handleAppIconUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAppSettings({
+          ...appSettings,
+          icon: file,
+          iconPreview: e.target.result
+        });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const publishStory = (storyId) => {
-    const updated = stories.map(s => 
-      s.id === storyId ? { ...s, isPublished: !s.isPublished } : s
+  const handleImageUpload = (index, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newImages = [...images];
+        newImages[index].file = file;
+        newImages[index].preview = e.target.result;
+        setImages(newImages);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 캐릭터 아바타 업로드
+  const handleAvatarUpload = (character, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const avatarData = e.target.result;
+        if (character === 'A') {
+          setCharA({ ...charA, avatar: file, avatarPreview: avatarData });
+        } else {
+          setCharB({ ...charB, avatar: file, avatarPreview: avatarData });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 썸네일 업로드
+  const handleThumbnailUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnailPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 파일 경로 직접 입력 (파일 시스템 방식)
+  const handleImagePathChange = (type, value, affectionLevel = null) => {
+    if (type === 'background' && affectionLevel !== null) {
+      setImageFiles({
+        ...imageFiles,
+        backgrounds: {
+          ...imageFiles.backgrounds,
+          [affectionLevel]: value
+        }
+      });
+    } else {
+      setImageFiles({
+        ...imageFiles,
+        [type]: value
+      });
+    }
+  };
+
+  // 키워드 이미지 추가 - 인라인 입력
+  const [newKeyword, setNewKeyword] = useState('');
+  const [newKeywordPath, setNewKeywordPath] = useState('');
+
+  const handleAddKeywordImage = () => {
+    if (newKeyword.trim() && newKeywordPath.trim()) {
+      setKeywordImageList([
+        ...keywordImageList,
+        { 
+          keyword: newKeyword.trim(), 
+          imagePath: newKeywordPath.trim() 
+        }
+      ]);
+      // 입력 필드 초기화
+      setNewKeyword('');
+      setNewKeywordPath('');
+    } else {
+      alert('키워드와 이미지 경로를 모두 입력해주세요!');
+    }
+  };
+
+  // 키워드 이미지 수정
+  const handleUpdateKeywordImage = (index, field, value) => {
+    const updated = [...keywordImageList];
+    updated[index][field] = value;
+    setKeywordImageList(updated);
+  };
+
+  // 키워드 이미지 삭제
+  const handleRemoveKeywordImage = (index) => {
+    setKeywordImageList(keywordImageList.filter((_, i) => i !== index));
+  };
+
+  const handleTagToggle = (character, tag) => {
+    if (character === 'A') {
+      const tags = charA.tags.includes(tag)
+        ? charA.tags.filter(t => t !== tag)
+        : [...charA.tags, tag];
+      setCharA({ ...charA, tags });
+    } else {
+      const tags = charB.tags.includes(tag)
+        ? charB.tags.filter(t => t !== tag)
+        : [...charB.tags, tag];
+      setCharB({ ...charB, tags });
+    }
+  };
+
+  const handleAddCustomTag = (character) => {
+    const tag = prompt('새 태그 입력 (예: #집착공)');
+    if (tag && tag.startsWith('#')) {
+      if (character === 'A') {
+        setCharA({ ...charA, tags: [...charA.tags, tag] });
+      } else {
+        setCharB({ ...charB, tags: [...charB.tags, tag] });
+      }
+    } else if (tag) {
+      alert('태그는 #으로 시작해야 합니다!');
+    }
+  };
+
+  // 작품 태그 토글
+  const handleStoryTagToggle = (category, tag) => {
+    console.log('🏷️ 태그 토글:', category, tag);
+    console.log('현재 scenario:', scenario);
+    
+    const currentTags = scenario.storyTags[category];
+    console.log('현재 태그들:', currentTags);
+    
+    const newTags = currentTags.includes(tag)
+      ? currentTags.filter(t => t !== tag)
+      : [...currentTags, tag];
+    
+    console.log('새 태그들:', newTags);
+    
+    setScenario({
+      ...scenario,
+      storyTags: {
+        ...scenario.storyTags,
+        [category]: newTags
+      }
+    });
+  };
+
+  // 작품 태그 커스텀 추가
+  const handleAddStoryTag = (category) => {
+    const tag = prompt(`새 ${category === 'genre' ? '장르' : category === 'mood' ? '분위기' : '상황'} 태그 입력 (예: #판타지)`);
+    console.log('✨ 새 태그 추가:', category, tag);
+    
+    if (tag && tag.startsWith('#')) {
+      setScenario({
+        ...scenario,
+        storyTags: {
+          ...scenario.storyTags,
+          [category]: [...scenario.storyTags[category], tag]
+        }
+      });
+      console.log('✅ 태그 추가 완료!');
+    } else if (tag) {
+      alert('태그는 #으로 시작해야 합니다!');
+    }
+  };
+
+  const handleArrayInput = (character, field, index, value) => {
+    if (character === 'A') {
+      const newArray = [...charA[field]];
+      if (value === '') {
+        newArray.splice(index, 1);
+      } else {
+        newArray[index] = value;
+      }
+      setCharA({ ...charA, [field]: newArray });
+    } else {
+      const newArray = [...charB[field]];
+      if (value === '') {
+        newArray.splice(index, 1);
+      } else {
+        newArray[index] = value;
+      }
+      setCharB({ ...charB, [field]: newArray });
+    }
+  };
+
+  const handleAddArrayItem = (character, field) => {
+    if (character === 'A') {
+      setCharA({ ...charA, [field]: [...charA[field], ''] });
+    } else {
+      setCharB({ ...charB, [field]: [...charB[field], ''] });
+    }
+  };
+
+  // 즉시 저장 기능 (localStorage + 부모 컴포넌트)
+  // 저장된 스토리 목록 관리
+  const [savedStories, setSavedStories] = useState([]);
+  const [currentStoryId, setCurrentStoryId] = useState(null);
+  const [storyTitle, setStoryTitle] = useState('병원의 운명적 향기');
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+
+  // 이미지 파일 경로 관리 (파일 시스템)
+  const [imageFiles, setImageFiles] = useState({
+    thumbnail: '',  // 썸네일 경로
+    profileA: '',   // 공 프로필
+    profileB: '',   // 수 프로필
+    backgrounds: {  // 호감도별 배경
+      0: '',   // 0-20점
+      20: '',  // 21-40점
+      40: '',  // 41-60점
+      60: '',  // 61-80점
+      80: ''   // 81-100점
+    },
+    keywordImages: [] // 키워드 이미지
+  });
+
+  // 키워드 이미지 (keyword + 이미지 경로)
+  const [keywordImageList, setKeywordImageList] = useState([
+    // { keyword: '키스', imagePath: '/images/stories/story-1/kiss.jpg' }
+  ]);
+
+  // 컴포넌트 마운트 시 저장된 스토리 목록 로드
+  useEffect(() => {
+    const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
+    setSavedStories(stories);
+  }, []);
+
+  // 설정 저장 (이미지 제외)
+  const handleSaveConfig = () => {
+    const storyId = currentStoryId || Date.now().toString();
+    
+    const config = {
+      id: storyId,
+      storyTitle: storyTitle,
+      savedAt: new Date().toISOString(),
+      published: false, // 발행 여부 (저장 시에는 비공개)
+      publishedAt: null,
+      thumbnail: imageFiles.thumbnail || thumbnailPreview, // 파일 경로 우선, 없으면 Base64
+      appSettings,
+      title: scenario.title,
+      description: scenario.description,
+      storyTags: scenario.storyTags,
+      characterA: {
+        ...charA,
+        avatar: null,
+        avatarPreview: imageFiles.profileA || charA.avatarPreview // 파일 경로 저장
+      },
+      characterB: {
+        ...charB,
+        avatar: null,
+        avatarPreview: imageFiles.profileB || charB.avatarPreview // 파일 경로 저장
+      },
+      scenario: {
+        relationship: scenario.relationship,
+        location: scenario.location,
+        situation: scenario.situation,
+        time: scenario.time,
+        narrativePattern: scenario.narrativePattern || 'A'
+      },
+      images: images.map(img => ({
+        id: img.id,
+        threshold: img.threshold,
+        name: img.name
+        // preview 제외 (Base64가 용량 초과 원인)
+      })),
+      // 배경 이미지 (호감도별)
+      backgroundImages: imageFiles.backgrounds,
+      // 키워드 이미지
+      keywordImages: keywordImageList
+    };
+
+    // 스토리 목록에 추가/업데이트
+    const existingIndex = savedStories.findIndex(s => s.id === storyId);
+    let updatedStories;
+    
+    if (existingIndex >= 0) {
+      // 기존 스토리 업데이트 (발행 상태 유지)
+      updatedStories = [...savedStories];
+      updatedStories[existingIndex] = {
+        ...config,
+        published: updatedStories[existingIndex].published,
+        publishedAt: updatedStories[existingIndex].publishedAt
+      };
+    } else {
+      // 새 스토리 추가
+      updatedStories = [...savedStories, config];
+    }
+    
+    // localStorage에 스토리 목록 저장
+    localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
+    setSavedStories(updatedStories);
+    setCurrentStoryId(storyId);
+    
+    // 현재 활성 스토리로 설정
+    localStorage.setItem('kind_cat_active_story', storyId);
+    
+    alert(`✅ "${storyTitle}" 스토리가 저장되었습니다!`);
+  };
+
+  // 스토리 발행
+  const handlePublishStory = () => {
+    if (!currentStoryId) {
+      alert('⚠️ 먼저 스토리를 저장해주세요!');
+      return;
+    }
+
+    const story = savedStories.find(s => s.id === currentStoryId);
+    if (!story) {
+      alert('⚠️ 스토리를 찾을 수 없습니다!');
+      return;
+    }
+
+    if (!window.confirm(`📢 "${storyTitle}" 스토리를 발행하시겠습니까?\n\n발행하면 메인 화면에 공개됩니다!`)) {
+      return;
+    }
+
+    // 발행 상태 업데이트
+    const updatedStories = savedStories.map(s => 
+      s.id === currentStoryId 
+        ? { ...s, published: true, publishedAt: new Date().toISOString() }
+        : s
     );
-    setStories(updated);
-    localStorage.setItem('kind_cat_stories', JSON.stringify(updated));
+
+    localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
+    setSavedStories(updatedStories);
+
+    alert(`✅ "${storyTitle}" 스토리가 발행되었습니다!\n\n메인 화면에서 확인할 수 있습니다.`);
   };
 
-  const deleteStory = (storyId) => {
-    if (window.confirm('정말 삭제하시겠습니까?')) {
-      const filtered = stories.filter(s => s.id !== storyId);
-      setStories(filtered);
-      localStorage.setItem('kind_cat_stories', JSON.stringify(filtered));
+  // 발행 취소
+  const handleUnpublishStory = () => {
+    if (!currentStoryId) return;
+
+    if (!window.confirm(`"${storyTitle}" 스토리의 발행을 취소하시겠습니까?\n\n메인 화면에서 숨겨집니다.`)) {
+      return;
     }
+
+    const updatedStories = savedStories.map(s => 
+      s.id === currentStoryId 
+        ? { ...s, published: false, publishedAt: null }
+        : s
+    );
+
+    localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
+    setSavedStories(updatedStories);
+
+    alert(`✅ "${storyTitle}" 스토리의 발행이 취소되었습니다!`);
+  };
+
+  // 스토리 로드
+  const handleLoadStory = (storyId) => {
+    const story = savedStories.find(s => s.id === storyId);
+    if (!story) return;
+    
+    setCurrentStoryId(story.id);
+    setStoryTitle(story.storyTitle);
+    setThumbnailPreview(story.thumbnail || null); // 썸네일 로드
+    setAppSettings(story.appSettings);
+    setScenario({
+      title: story.title,
+      description: story.description,
+      storyTags: story.storyTags,
+      relationship: story.scenario.relationship,
+      location: story.scenario.location,
+      situation: story.scenario.situation,
+      time: story.scenario.time,
+      narrativePattern: story.scenario.narrativePattern || 'A'
+    });
+    setCharA(story.characterA);
+    setCharB(story.characterB);
+    setImages(story.images);
+    
+    // 현재 활성 스토리로 설정
+    localStorage.setItem('kind_cat_active_story', storyId);
+    
+    alert(`✅ "${story.storyTitle}" 스토리를 불러왔습니다!`);
+  };
+
+  // 새 스토리 생성
+  const handleNewStory = () => {
+    if (!window.confirm('현재 작업 중인 내용이 저장되지 않았을 수 있습니다. 새 스토리를 만드시겠습니까?')) {
+      return;
+    }
+    
+    setCurrentStoryId(null);
+    setStoryTitle('새 스토리');
+    // 기본값으로 리셋 (생략 - 필요시 추가)
+    
+    alert('✅ 새 스토리가 생성되었습니다!');
+  };
+
+  // 스토리 삭제
+  const handleDeleteStory = (storyId) => {
+    const story = savedStories.find(s => s.id === storyId);
+    if (!window.confirm(`"${story?.storyTitle}" 스토리를 삭제하시겠습니까?`)) {
+      return;
+    }
+    
+    const updatedStories = savedStories.filter(s => s.id !== storyId);
+    localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
+    setSavedStories(updatedStories);
+    
+    // 현재 스토리를 삭제한 경우
+    if (currentStoryId === storyId) {
+      setCurrentStoryId(null);
+      localStorage.removeItem('kind_cat_active_story');
+    }
+    
+    alert('✅ 스토리가 삭제되었습니다!');
+  };
+
+  // 다운로드 기능 (백업용)
+  const handleDownloadConfig = () => {
+    const config = {
+      appSettings,
+      title: scenario.title,
+      description: scenario.description,
+      characterA: charA,
+      characterB: charB,
+      scenario: {
+        relationship: scenario.relationship,
+        location: scenario.location,
+        situation: scenario.situation,
+        time: scenario.time
+      },
+      images: images.map(img => ({
+        id: img.id,
+        threshold: img.threshold,
+        name: img.name,
+        preview: img.preview
+      }))
+    };
+
+    const configText = `export const STORY_CONFIG = ${JSON.stringify(config, null, 2)};
+
+export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI입니다.
+
+[캐릭터 태그]
+공: ${charA.tags.join(', ')}
+수: ${charB.tags.join(', ')}
+
+[선호 행동]
+공: ${charA.preferredActions.join(', ')}
+수: ${charB.preferredActions.join(', ')}
+
+[비선호 행동 - 절대 사용 금지]
+공: ${charA.avoidedActions.join(', ')}
+수: ${charB.avoidedActions.join(', ')}
+
+[핵심 규칙]
+1. 응답은 반드시 JSON 형식
+2. 지문과 대사 명확히 구분
+3. 캐릭터 성격과 태그 반영
+4. 호감도 점진적 증가
+5. 선호 행동 우선, 비선호 행동 회피
+
+[응답 형식]
+{
+  "narration": "지문 (200-300자)",
+  "dialogues": [
+    {"character": "${charA.name}", "text": "대사"},
+    {"character": "${charB.name}", "text": "대사"}
+  ],
+  "affection_change": -10~+15,
+  "excitement_change": 0~+10,
+  "choices": ["선택1", "선택2", "선택3", "선택4"]
+}\`;`;
+
+    const blob = new Blob([configText], { type: 'text/javascript' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'storyConfig.js';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    alert('✅ 설정 파일 다운로드 완료!\\n\\nsrc/config/storyConfig.js에 덮어쓰기하고\\n이미지 파일들은 별도로 호스팅하세요.');
   };
 
   if (!isAuthenticated) {
     return (
       <div className="admin-login">
-        <div className="login-box">
-          <h2>KIND CAT Admin</h2>
-          <input
-            type="password"
-            placeholder="비밀번호"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-          />
-          <button onClick={handleLogin}>로그인</button>
+        <div className="login-container">
+          <div className="admin-logo">🔐</div>
+          <h1 className="admin-title">관리자 로그인</h1>
+          <form onSubmit={handleLogin}>
+            <input
+              type="password"
+              className="login-input"
+              placeholder="비밀번호 입력"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="submit" className="login-btn">로그인</button>
+          </form>
+          <p className="login-hint">힌트: admin1234</p>
         </div>
       </div>
     );
@@ -80,127 +687,1103 @@ function AdminPage() {
   return (
     <div className="admin-page">
       <div className="admin-header">
-        <h1>KIND CAT Admin</h1>
-        <button onClick={() => navigate('/')}>메인으로</button>
+        <h1>🎨 KIND CAT 관리자</h1>
+        <button className="logout-btn" onClick={() => setIsAuthenticated(false)}>
+          로그아웃
+        </button>
       </div>
 
       <div className="admin-content">
-        <div className="story-editor">
-          <h2>📚 스토리 편집</h2>
+        {/* 스토리 관리 */}
+        <div className="admin-section">
+          <h2 className="section-title">📚 스토리 관리</h2>
           
-          <div className="form-group">
-            <label>스토리 제목</label>
-            <input
-              value={currentStory.storyTitle}
-              onChange={(e) => setCurrentStory({...currentStory, storyTitle: e.target.value})}
-            />
-          </div>
+          <div className="story-manager">
+            <div className="current-story-info">
+              <label>현재 작업 중인 스토리</label>
+              <input 
+                type="text" 
+                value={storyTitle} 
+                onChange={(e) => setStoryTitle(e.target.value)}
+                placeholder="스토리 제목을 입력하세요"
+                className="story-title-input"
+              />
+              {currentStoryId && <span className="story-id-badge">ID: {currentStoryId.slice(0, 8)}</span>}
+            </div>
 
-          <div className="form-group">
-            <label>설명</label>
-            <textarea
-              value={currentStory.description}
-              onChange={(e) => setCurrentStory({...currentStory, description: e.target.value})}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>태그 (쉼표로 구분)</label>
-            <input
-              placeholder="#오피스, #19금, #병원"
-              value={currentStory.tags.join(', ')}
-              onChange={(e) => setCurrentStory({...currentStory, tags: e.target.value.split(',').map(t => t.trim())})}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>썸네일 이미지 경로</label>
-            <input
-              placeholder="/images/stories/story-1/thumbnail.jpg"
-              value={currentStory.thumbnailImage}
-              onChange={(e) => setCurrentStory({...currentStory, thumbnailImage: e.target.value})}
-            />
-          </div>
-
-          <h3>🔺 공 캐릭터</h3>
-          <div className="form-group">
-            <label>이름</label>
-            <input
-              value={currentStory.characterA.name}
-              onChange={(e) => setCurrentStory({...currentStory, characterA: {...currentStory.characterA, name: e.target.value}})}
-            />
-          </div>
-          <div className="form-group">
-            <label>나이</label>
-            <input
-              value={currentStory.characterA.age}
-              onChange={(e) => setCurrentStory({...currentStory, characterA: {...currentStory.characterA, age: e.target.value}})}
-            />
-          </div>
-          <div className="form-group">
-            <label>직업</label>
-            <input
-              value={currentStory.characterA.occupation}
-              onChange={(e) => setCurrentStory({...currentStory, characterA: {...currentStory.characterA, occupation: e.target.value}})}
-            />
-          </div>
-          <div className="form-group">
-            <label>프로필 이미지 경로</label>
-            <input
-              placeholder="/images/stories/story-1/profile-a.jpg"
-              value={currentStory.characterA.profileImage}
-              onChange={(e) => setCurrentStory({...currentStory, characterA: {...currentStory.characterA, profileImage: e.target.value}})}
-            />
-          </div>
-
-          <h3>🔻 수 캐릭터</h3>
-          <div className="form-group">
-            <label>이름</label>
-            <input
-              value={currentStory.characterB.name}
-              onChange={(e) => setCurrentStory({...currentStory, characterB: {...currentStory.characterB, name: e.target.value}})}
-            />
-          </div>
-          <div className="form-group">
-            <label>나이</label>
-            <input
-              value={currentStory.characterB.age}
-              onChange={(e) => setCurrentStory({...currentStory, characterB: {...currentStory.characterB, age: e.target.value}})}
-            />
-          </div>
-          <div className="form-group">
-            <label>직업</label>
-            <input
-              value={currentStory.characterB.occupation}
-              onChange={(e) => setCurrentStory({...currentStory, characterB: {...currentStory.characterB, occupation: e.target.value}})}
-            />
-          </div>
-          <div className="form-group">
-            <label>프로필 이미지 경로</label>
-            <input
-              placeholder="/images/stories/story-1/profile-b.jpg"
-              value={currentStory.characterB.profileImage}
-              onChange={(e) => setCurrentStory({...currentStory, characterB: {...currentStory.characterB, profileImage: e.target.value}})}
-            />
-          </div>
-
-          <button onClick={saveStory} className="save-btn">💾 저장</button>
-        </div>
-
-        <div className="story-list">
-          <h2>📋 스토리 목록</h2>
-          {stories.map(story => (
-            <div key={story.id} className="story-item">
-              <h3>{story.storyTitle}</h3>
-              <div className="story-actions">
-                <button onClick={() => setCurrentStory(story)}>편집</button>
-                <button onClick={() => publishStory(story.id)}>
-                  {story.isPublished ? '발행 취소' : '발행'}
-                </button>
-                <button onClick={() => deleteStory(story.id)}>삭제</button>
+            <div className="thumbnail-upload-section">
+              <label>📸 스토리 썸네일 (메인 화면 노출)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleThumbnailUpload}
+                className="file-input"
+              />
+              {thumbnailPreview && (
+                <div className="thumbnail-preview-container">
+                  <img src={thumbnailPreview} alt="썸네일 미리보기" className="thumbnail-preview" />
+                  <button 
+                    className="btn-remove-thumbnail" 
+                    onClick={() => setThumbnailPreview(null)}
+                  >
+                    ✕ 제거
+                  </button>
+                </div>
+              )}
+              <p className="thumbnail-note">
+                💡 권장 크기: 800x1000px (4:5 비율) | 메인 화면 카드에 표시됩니다
+              </p>
+              
+              {/* 파일 시스템 경로 입력 */}
+              <div className="file-path-input-section">
+                <label>🗂️ 또는 파일 경로 직접 입력 (권장)</label>
+                <input
+                  type="text"
+                  placeholder="/images/stories/story-1/thumbnail.jpg"
+                  value={imageFiles.thumbnail}
+                  onChange={(e) => handleImagePathChange('thumbnail', e.target.value)}
+                  className="path-input"
+                />
+                <p className="path-note">
+                  💾 파일을 <code>public/images/stories/</code> 폴더에 업로드하고 경로를 입력하세요<br/>
+                  ✅ 장점: 빠른 로딩, 무제한 용량, 브라우저 캐싱
+                </p>
               </div>
             </div>
-          ))}
+
+            {/* 배경 이미지 (호감도별) */}
+            <div className="background-images-section">
+              <h3 className="subsection-title">🎨 배경 이미지 (호감도별)</h3>
+              <p className="section-description">
+                호감도 점수에 따라 다른 배경 이미지가 표시됩니다. 채팅 화면 배경으로 사용됩니다.
+              </p>
+              
+              <div className="affection-backgrounds">
+                <div className="bg-input-group">
+                  <label>0-20점 (낮은 호감도)</label>
+                  <input
+                    type="text"
+                    placeholder="/images/stories/story-1/bg-0.jpg"
+                    value={imageFiles.backgrounds[0]}
+                    onChange={(e) => handleImagePathChange('background', e.target.value, 0)}
+                    className="path-input"
+                  />
+                  {imageFiles.backgrounds[0] && (
+                    <img src={imageFiles.backgrounds[0]} alt="배경 미리보기" className="bg-preview-small" />
+                  )}
+                </div>
+
+                <div className="bg-input-group">
+                  <label>21-40점</label>
+                  <input
+                    type="text"
+                    placeholder="/images/stories/story-1/bg-20.jpg"
+                    value={imageFiles.backgrounds[20]}
+                    onChange={(e) => handleImagePathChange('background', e.target.value, 20)}
+                    className="path-input"
+                  />
+                  {imageFiles.backgrounds[20] && (
+                    <img src={imageFiles.backgrounds[20]} alt="배경 미리보기" className="bg-preview-small" />
+                  )}
+                </div>
+
+                <div className="bg-input-group">
+                  <label>41-60점 (중간 호감도)</label>
+                  <input
+                    type="text"
+                    placeholder="/images/stories/story-1/bg-40.jpg"
+                    value={imageFiles.backgrounds[40]}
+                    onChange={(e) => handleImagePathChange('background', e.target.value, 40)}
+                    className="path-input"
+                  />
+                  {imageFiles.backgrounds[40] && (
+                    <img src={imageFiles.backgrounds[40]} alt="배경 미리보기" className="bg-preview-small" />
+                  )}
+                </div>
+
+                <div className="bg-input-group">
+                  <label>61-80점</label>
+                  <input
+                    type="text"
+                    placeholder="/images/stories/story-1/bg-60.jpg"
+                    value={imageFiles.backgrounds[60]}
+                    onChange={(e) => handleImagePathChange('background', e.target.value, 60)}
+                    className="path-input"
+                  />
+                  {imageFiles.backgrounds[60] && (
+                    <img src={imageFiles.backgrounds[60]} alt="배경 미리보기" className="bg-preview-small" />
+                  )}
+                </div>
+
+                <div className="bg-input-group">
+                  <label>81-100점 (최고 호감도)</label>
+                  <input
+                    type="text"
+                    placeholder="/images/stories/story-1/bg-80.jpg"
+                    value={imageFiles.backgrounds[80]}
+                    onChange={(e) => handleImagePathChange('background', e.target.value, 80)}
+                    className="path-input"
+                  />
+                  {imageFiles.backgrounds[80] && (
+                    <img src={imageFiles.backgrounds[80]} alt="배경 미리보기" className="bg-preview-small" />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 키워드 이미지 */}
+            <div className="keyword-images-section">
+              <h3 className="subsection-title">🖼️ 키워드 이미지</h3>
+              <p className="section-description">
+                특정 키워드가 대화에 나타나면 자동으로 이미지를 전송합니다.<br/>
+                예: "키스" 입력 시 → 키스 장면 이미지 표시
+              </p>
+
+              {/* 키워드 추가 폼 */}
+              <div className="keyword-add-form">
+                <div className="keyword-input-row">
+                  <div className="keyword-input-col">
+                    <label>키워드</label>
+                    <input
+                      type="text"
+                      placeholder="키스, 포옹, 울음..."
+                      value={newKeyword}
+                      onChange={(e) => setNewKeyword(e.target.value)}
+                      className="keyword-text-input"
+                    />
+                  </div>
+                  <div className="keyword-input-col">
+                    <label>이미지 경로</label>
+                    <input
+                      type="text"
+                      placeholder="/images/stories/story-1/kiss.jpg"
+                      value={newKeywordPath}
+                      onChange={(e) => setNewKeywordPath(e.target.value)}
+                      className="keyword-path-input"
+                    />
+                  </div>
+                  <button 
+                    className="btn-add-keyword" 
+                    onClick={handleAddKeywordImage}
+                  >
+                    ➕ 추가
+                  </button>
+                </div>
+              </div>
+
+              {/* 키워드 이미지 목록 */}
+              {keywordImageList.length > 0 && (
+                <div className="keyword-image-list">
+                  {keywordImageList.map((item, index) => (
+                    <div key={index} className="keyword-image-item">
+                      <div className="keyword-item-content">
+                        <div className="keyword-item-inputs">
+                          <div className="keyword-edit-col">
+                            <label>키워드</label>
+                            <input
+                              type="text"
+                              value={item.keyword}
+                              onChange={(e) => handleUpdateKeywordImage(index, 'keyword', e.target.value)}
+                              className="keyword-edit-input"
+                            />
+                          </div>
+                          <div className="keyword-edit-col">
+                            <label>이미지 경로</label>
+                            <input
+                              type="text"
+                              value={item.imagePath}
+                              onChange={(e) => handleUpdateKeywordImage(index, 'imagePath', e.target.value)}
+                              className="keyword-edit-input"
+                            />
+                          </div>
+                        </div>
+                        {item.imagePath && (
+                          <div className="keyword-preview-container">
+                            <img 
+                              src={item.imagePath} 
+                              alt={item.keyword} 
+                              className="keyword-preview" 
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <button 
+                        className="btn-remove-keyword" 
+                        onClick={() => handleRemoveKeywordImage(index)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="keyword-examples">
+                <strong>💡 키워드 예시:</strong>
+                <div className="examples-grid">
+                  <span>키스, 포옹, 울음, 미소</span>
+                  <span>침대, 소파, 사무실, 병원</span>
+                  <span>선물, 꽃, 반지, 목걸이</span>
+                  <span>비, 눈, 석양, 바다</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="story-actions">
+              <button className="btn-new-story" onClick={handleNewStory}>
+                ➕ 새 스토리 만들기
+              </button>
+            </div>
+
+            {savedStories.length > 0 && (
+              <div className="saved-stories-list">
+                <h3 className="subsection-title">저장된 스토리 목록</h3>
+                <div className="stories-grid">
+                  {savedStories.map(story => (
+                    <div 
+                      key={story.id} 
+                      className={`story-card ${currentStoryId === story.id ? 'active' : ''}`}
+                    >
+                      <div className="story-card-header">
+                        <h4>{story.storyTitle}</h4>
+                        {currentStoryId === story.id && <span className="current-badge">현재</span>}
+                      </div>
+                      <p className="story-desc">{story.description}</p>
+                      <p className="story-meta">
+                        {new Date(story.savedAt).toLocaleString('ko-KR')}
+                      </p>
+                      <div className="story-card-actions">
+                        <button 
+                          className="btn-load" 
+                          onClick={() => handleLoadStory(story.id)}
+                          disabled={currentStoryId === story.id}
+                        >
+                          📂 불러오기
+                        </button>
+                        <button 
+                          className="btn-delete" 
+                          onClick={() => handleDeleteStory(story.id)}
+                        >
+                          🗑️ 삭제
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 스토리 정보 */}
+        <div className="admin-section">
+          <h2 className="section-title">📖 스토리 정보</h2>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>제목</label>
+              <input
+                type="text"
+                value={scenario.title}
+                onChange={(e) => setScenario({ ...scenario, title: e.target.value })}
+              />
+            </div>
+            <div className="form-group full-width">
+              <label>설명</label>
+              <textarea
+                value={scenario.description}
+                onChange={(e) => setScenario({ ...scenario, description: e.target.value })}
+              />
+            </div>
+          </div>
+
+          {/* 작품 태그 */}
+          <h3 className="subsection-title" style={{marginTop: '30px'}}>🏷️ 작품 태그</h3>
+          
+          <div className="story-tags-section">
+            <h4 className="tag-category-title">장르</h4>
+            <div className="tag-container">
+              {STORY_TAG_OPTIONS.genre.map(tag => (
+                <button
+                  key={tag}
+                  className={`tag-btn ${scenario.storyTags.genre.includes(tag) ? 'active' : ''}`}
+                  onClick={() => handleStoryTagToggle('genre', tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+              {/* 커스텀 태그도 표시 */}
+              {scenario.storyTags.genre
+                .filter(tag => !STORY_TAG_OPTIONS.genre.includes(tag))
+                .map(tag => (
+                  <button
+                    key={tag}
+                    className="tag-btn active"
+                    onClick={() => handleStoryTagToggle('genre', tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              <button className="tag-btn add-tag" onClick={() => handleAddStoryTag('genre')}>
+                + 추가
+              </button>
+            </div>
+
+            <h4 className="tag-category-title">분위기</h4>
+            <div className="tag-container">
+              {STORY_TAG_OPTIONS.mood.map(tag => (
+                <button
+                  key={tag}
+                  className={`tag-btn ${scenario.storyTags.mood.includes(tag) ? 'active' : ''}`}
+                  onClick={() => handleStoryTagToggle('mood', tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+              {/* 커스텀 태그도 표시 */}
+              {scenario.storyTags.mood
+                .filter(tag => !STORY_TAG_OPTIONS.mood.includes(tag))
+                .map(tag => (
+                  <button
+                    key={tag}
+                    className="tag-btn active"
+                    onClick={() => handleStoryTagToggle('mood', tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              <button className="tag-btn add-tag" onClick={() => handleAddStoryTag('mood')}>
+                + 추가
+              </button>
+            </div>
+
+            <h4 className="tag-category-title">상황</h4>
+            <div className="tag-container">
+              {STORY_TAG_OPTIONS.situation.map(tag => (
+                <button
+                  key={tag}
+                  className={`tag-btn ${scenario.storyTags.situation.includes(tag) ? 'active' : ''}`}
+                  onClick={() => handleStoryTagToggle('situation', tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+              {/* 커스텀 태그도 표시 */}
+              {scenario.storyTags.situation
+                .filter(tag => !STORY_TAG_OPTIONS.situation.includes(tag))
+                .map(tag => (
+                  <button
+                    key={tag}
+                    className="tag-btn active"
+                    onClick={() => handleStoryTagToggle('situation', tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              <button className="tag-btn add-tag" onClick={() => handleAddStoryTag('situation')}>
+                + 추가
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 캐릭터 A (공) */}
+        <div className="admin-section">
+          <h2 className="section-title">🔺 공(攻) 캐릭터</h2>
+          
+          {/* 프로필 사진 업로드 */}
+          <div className="avatar-upload-section">
+            <label className="avatar-label">📸 캐릭터 프로필 사진</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleAvatarUpload('A', e)}
+              className="file-input"
+            />
+            {charA.avatarPreview && (
+              <div className="avatar-preview-container">
+                <img src={charA.avatarPreview} alt="프로필" className="avatar-preview" />
+                <button 
+                  className="btn-remove-avatar" 
+                  onClick={() => setCharA({ ...charA, avatar: null, avatarPreview: null })}
+                >
+                  ✕ 제거
+                </button>
+              </div>
+            )}
+            <p className="avatar-note">
+              💡 권장 크기: 정사각형 (500x500px) | 스토리 상세 페이지에 표시됩니다
+            </p>
+
+            {/* 파일 경로 입력 */}
+            <div className="file-path-input-section">
+              <label>🗂️ 또는 파일 경로 직접 입력</label>
+              <input
+                type="text"
+                placeholder="/images/stories/story-1/profile-a.jpg"
+                value={imageFiles.profileA}
+                onChange={(e) => handleImagePathChange('profileA', e.target.value)}
+                className="path-input"
+              />
+            </div>
+          </div>
+
+          <div className="visibility-header">
+            <h3 className="subsection-title">기본 정보</h3>
+            <label className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={charA.visibility.basicInfo}
+                onChange={(e) => setCharA({
+                  ...charA,
+                  visibility: { ...charA.visibility, basicInfo: e.target.checked }
+                })}
+              />
+              <span className="toggle-slider"></span>
+              <span className="toggle-label">
+                {charA.visibility.basicInfo ? '👁️ 유저 공개' : '🔒 비공개 (AI만 참고)'}
+              </span>
+            </label>
+          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>이름 *</label>
+              <input type="text" value={charA.name} onChange={(e) => setCharA({ ...charA, name: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>나이</label>
+              <input type="text" value={charA.age} onChange={(e) => setCharA({ ...charA, age: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>직업</label>
+              <input type="text" value={charA.occupation} onChange={(e) => setCharA({ ...charA, occupation: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>성격</label>
+              <input type="text" value={charA.personality} onChange={(e) => setCharA({ ...charA, personality: e.target.value })} />
+            </div>
+            <div className="form-group full-width">
+              <label>외모</label>
+              <textarea value={charA.appearance} onChange={(e) => setCharA({ ...charA, appearance: e.target.value })} rows="3" />
+            </div>
+            
+            <div className="form-group">
+              <label>키</label>
+              <input type="text" value={charA.bodyDetails.height} onChange={(e) => setCharA({ ...charA, bodyDetails: { ...charA.bodyDetails, height: e.target.value }})} placeholder="예: 188cm" />
+            </div>
+            <div className="form-group">
+              <label>체형</label>
+              <input type="text" value={charA.bodyDetails.build} onChange={(e) => setCharA({ ...charA, bodyDetails: { ...charA.bodyDetails, build: e.target.value }})} placeholder="예: 거대한 근육질" />
+            </div>
+            <div className="form-group full-width">
+              <label>부위별 특징</label>
+              <input type="text" value={charA.bodyDetails.features} onChange={(e) => setCharA({ ...charA, bodyDetails: { ...charA.bodyDetails, features: e.target.value }})} placeholder="예: 떡 벌어진 어깨, 탄탄한 가슴 근육, 혈관 도드라진 팔뚝" />
+            </div>
+            
+            <div className="form-group full-width">
+              <label>말투</label>
+              <textarea value={charA.speech} onChange={(e) => setCharA({ ...charA, speech: e.target.value })} rows="2" />
+            </div>
+          </div>
+
+          <h3 className="subsection-title">💕 호칭 시스템 (공 → 수)</h3>
+          <div className="calling-system-note">
+            <p>관계 점수(호감도)에 따라 공이 수를 부르는 호칭이 변화합니다</p>
+          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>0-20점 (타인)</label>
+              <input type="text" value={charA.callingSystem.affection_0_20} onChange={(e) => setCharA({ ...charA, callingSystem: { ...charA.callingSystem, affection_0_20: e.target.value }})} placeholder="예: 윤태이 씨" />
+            </div>
+            <div className="form-group">
+              <label>21-40점 (경계)</label>
+              <input type="text" value={charA.callingSystem.affection_21_40} onChange={(e) => setCharA({ ...charA, callingSystem: { ...charA.callingSystem, affection_21_40: e.target.value }})} placeholder="예: 태이 씨" />
+            </div>
+            <div className="form-group">
+              <label>41-60점 (관심)</label>
+              <input type="text" value={charA.callingSystem.affection_41_60} onChange={(e) => setCharA({ ...charA, callingSystem: { ...charA.callingSystem, affection_41_60: e.target.value }})} placeholder="예: 태이" />
+            </div>
+            <div className="form-group">
+              <label>61-80점 (호감)</label>
+              <input type="text" value={charA.callingSystem.affection_61_80} onChange={(e) => setCharA({ ...charA, callingSystem: { ...charA.callingSystem, affection_61_80: e.target.value }})} placeholder="예: 너" />
+            </div>
+            <div className="form-group">
+              <label>81-100점 (애정/신뢰)</label>
+              <input type="text" value={charA.callingSystem.affection_81_100} onChange={(e) => setCharA({ ...charA, callingSystem: { ...charA.callingSystem, affection_81_100: e.target.value }})} placeholder="예: 내 거, 자기" />
+            </div>
+          </div>
+
+          <div className="form-grid">
+            <div className="form-group full-width">
+              <label>프로필 사진</label>
+              <input type="file" accept="image/*" onChange={(e) => handleAvatarUpload('A', e)} className="file-input" />
+              {charA.avatarPreview && <img src={charA.avatarPreview} alt="preview" className="avatar-preview" />}
+            </div>
+          </div>
+
+          <div className="visibility-header">
+            <h3 className="subsection-title">🔞 성적 디테일</h3>
+            <label className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={charA.visibility.sexualDetails}
+                onChange={(e) => setCharA({
+                  ...charA,
+                  visibility: { ...charA.visibility, sexualDetails: e.target.checked }
+                })}
+              />
+              <span className="toggle-slider"></span>
+              <span className="toggle-label">
+                {charA.visibility.sexualDetails ? '👁️ 유저 공개' : '🔒 비공개 (AI만 참고)'}
+              </span>
+            </label>
+          </div>
+          
+          <div className="sexual-detail-guide">
+            <p className="guide-text">
+              💡 <strong>공(攻) 작성 가이드</strong>: 
+              성기 특징 → 신체 특징 → 체향 순서로 작성 권장<br/>
+              예시: "굵고 압도적인 형태, 선명한 핏줄 / 탄탄한 근육, 뜨거운 체온 / 진한 사향/머스크 향"
+            </p>
+            <p className="guide-warning">
+              ⚠️ 공 역할 금지: 점액 분비, 구멍 묘사, 유두 과도한 민감도
+            </p>
+          </div>
+
+          <div className="form-grid">
+            <div className="form-group full-width">
+              <label>성기 특징 (1-2개)</label>
+              <textarea 
+                value={charA.sexualDetails.genital || ''} 
+                onChange={(e) => setCharA({ ...charA, sexualDetails: { ...charA.sexualDetails, genital: e.target.value }})}
+                placeholder="예: 굵고 압도적인 형태, 선명한 핏줄, 투명한 액 과다 분비"
+                rows="2"
+              />
+            </div>
+            <div className="form-group full-width">
+              <label>신체 특징 (1-2개)</label>
+              <textarea 
+                value={charA.sexualDetails.body || ''} 
+                onChange={(e) => setCharA({ ...charA, sexualDetails: { ...charA.sexualDetails, body: e.target.value }})}
+                placeholder="예: 탄탄한 근육, 굵은 허벅지, 뜨거운 체온, 거친 손길, 낮은 목소리"
+                rows="2"
+              />
+            </div>
+            <div className="form-group full-width">
+              <label>체향 (선택)</label>
+              <input 
+                type="text" 
+                value={charA.sexualDetails.scent || ''} 
+                onChange={(e) => setCharA({ ...charA, sexualDetails: { ...charA.sexualDetails, scent: e.target.value }})}
+                placeholder="예: 진한 사향/머스크, 땀+남성 체취, 담배 냄새"
+              />
+            </div>
+            <div className="form-group full-width">
+              <label>기타 특수 설정 (선택)</label>
+              <textarea 
+                value={charA.sexualDetails.special || ''} 
+                onChange={(e) => setCharA({ ...charA, sexualDetails: { ...charA.sexualDetails, special: e.target.value }})}
+                placeholder="오메가버스: 알파 페로몬 분비, 교미 본능, 매듭 형성 등"
+                rows="2"
+              />
+            </div>
+          </div>
+
+          <h3 className="subsection-title">🏷️ 태그</h3>
+          <div className="tag-container">
+            {COMMON_TAGS_GONG.map(tag => (
+              <button
+                key={tag}
+                className={`tag-btn ${charA.tags.includes(tag) ? 'active' : ''}`}
+                onClick={() => handleTagToggle('A', tag)}
+              >
+                {tag}
+              </button>
+            ))}
+            <button className="tag-btn add-tag" onClick={() => handleAddCustomTag('A')}>
+              + 추가
+            </button>
+          </div>
+
+          <h3 className="subsection-title">✅ 선호 행동 (AI가 우선 사용)</h3>
+          <div className="action-list">
+            {charA.preferredActions.map((action, idx) => (
+              <input
+                key={idx}
+                type="text"
+                value={action}
+                onChange={(e) => handleArrayInput('A', 'preferredActions', idx, e.target.value)}
+                placeholder="예: 목 잡기"
+                className="action-input"
+              />
+            ))}
+            <button className="btn-add-action" onClick={() => handleAddArrayItem('A', 'preferredActions')}>
+              + 행동 추가
+            </button>
+          </div>
+
+          <h3 className="subsection-title">❌ 비선호 행동 (AI가 회피)</h3>
+          <div className="action-list">
+            {charA.avoidedActions.map((action, idx) => (
+              <input
+                key={idx}
+                type="text"
+                value={action}
+                onChange={(e) => handleArrayInput('A', 'avoidedActions', idx, e.target.value)}
+                placeholder="예: 애교"
+                className="action-input"
+              />
+            ))}
+            <button className="btn-add-action" onClick={() => handleAddArrayItem('A', 'avoidedActions')}>
+              + 행동 추가
+            </button>
+          </div>
+        </div>
+
+        {/* 캐릭터 B (수) */}
+        <div className="admin-section">
+          <h2 className="section-title">🔻 수(受) 캐릭터</h2>
+          
+          {/* 프로필 사진 업로드 */}
+          <div className="avatar-upload-section">
+            <label className="avatar-label">📸 캐릭터 프로필 사진</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleAvatarUpload('B', e)}
+              className="file-input"
+            />
+            {charB.avatarPreview && (
+              <div className="avatar-preview-container">
+                <img src={charB.avatarPreview} alt="프로필" className="avatar-preview" />
+                <button 
+                  className="btn-remove-avatar" 
+                  onClick={() => setCharB({ ...charB, avatar: null, avatarPreview: null })}
+                >
+                  ✕ 제거
+                </button>
+              </div>
+            )}
+            <p className="avatar-note">
+              💡 권장 크기: 정사각형 (500x500px) | 스토리 상세 페이지에 표시됩니다
+            </p>
+
+            {/* 파일 경로 입력 */}
+            <div className="file-path-input-section">
+              <label>🗂️ 또는 파일 경로 직접 입력</label>
+              <input
+                type="text"
+                placeholder="/images/stories/story-1/profile-b.jpg"
+                value={imageFiles.profileB}
+                onChange={(e) => handleImagePathChange('profileB', e.target.value)}
+                className="path-input"
+              />
+            </div>
+          </div>
+
+          <h3 className="subsection-title">기본 정보</h3>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>이름 *</label>
+              <input type="text" value={charB.name} onChange={(e) => setCharB({ ...charB, name: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>나이</label>
+              <input type="text" value={charB.age} onChange={(e) => setCharB({ ...charB, age: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>직업</label>
+              <input type="text" value={charB.occupation} onChange={(e) => setCharB({ ...charB, occupation: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>성격</label>
+              <input type="text" value={charB.personality} onChange={(e) => setCharB({ ...charB, personality: e.target.value })} />
+            </div>
+            <div className="form-group full-width">
+              <label>외모</label>
+              <textarea value={charB.appearance} onChange={(e) => setCharB({ ...charB, appearance: e.target.value })} rows="3" />
+            </div>
+            
+            <div className="form-group">
+              <label>키</label>
+              <input type="text" value={charB.bodyDetails.height} onChange={(e) => setCharB({ ...charB, bodyDetails: { ...charB.bodyDetails, height: e.target.value }})} placeholder="예: 175-179cm" />
+            </div>
+            <div className="form-group">
+              <label>체형</label>
+              <input type="text" value={charB.bodyDetails.build} onChange={(e) => setCharB({ ...charB, bodyDetails: { ...charB.bodyDetails, build: e.target.value }})} placeholder="예: 슬림탄탄" />
+            </div>
+            <div className="form-group full-width">
+              <label>부위별 특징</label>
+              <input type="text" value={charB.bodyDetails.features} onChange={(e) => setCharB({ ...charB, bodyDetails: { ...charB.bodyDetails, features: e.target.value }})} placeholder="예: 잘록한 허리, 밀크빛 하얀 피부" />
+            </div>
+            
+            <div className="form-group full-width">
+              <label>말투</label>
+              <textarea value={charB.speech} onChange={(e) => setCharB({ ...charB, speech: e.target.value })} rows="2" />
+            </div>
+          </div>
+
+          <h3 className="subsection-title">💕 호칭 시스템 (수 → 공)</h3>
+          <div className="calling-system-note">
+            <p>관계 점수(호감도)에 따라 수가 공을 부르는 호칭이 변화합니다</p>
+          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>0-20점 (타인)</label>
+              <input type="text" value={charB.callingSystem.affection_0_20} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_0_20: e.target.value }})} placeholder="예: 과장님" />
+            </div>
+            <div className="form-group">
+              <label>21-40점 (경계)</label>
+              <input type="text" value={charB.callingSystem.affection_21_40} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_21_40: e.target.value }})} placeholder="예: 선생님" />
+            </div>
+            <div className="form-group">
+              <label>41-60점 (관심)</label>
+              <input type="text" value={charB.callingSystem.affection_41_60} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_41_60: e.target.value }})} placeholder="예: 강주혁 선생님" />
+            </div>
+            <div className="form-group">
+              <label>61-80점 (호감)</label>
+              <input type="text" value={charB.callingSystem.affection_61_80} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_61_80: e.target.value }})} placeholder="예: 주혁 씨" />
+            </div>
+            <div className="form-group">
+              <label>81-100점 (애정/신뢰)</label>
+              <input type="text" value={charB.callingSystem.affection_81_100} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_81_100: e.target.value }})} placeholder="예: 주혁아, 자기" />
+            </div>
+          </div>
+
+          <div className="form-grid">
+            <div className="form-group full-width">
+              <label>프로필 사진</label>
+              <input type="file" accept="image/*" onChange={(e) => handleAvatarUpload('B', e)} className="file-input" />
+              {charB.avatarPreview && <img src={charB.avatarPreview} alt="preview" className="avatar-preview" />}
+            </div>
+          </div>
+
+          <div className="visibility-header">
+            <h3 className="subsection-title">🔞 성적 디테일</h3>
+            <label className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={charB.visibility.sexualDetails}
+                onChange={(e) => setCharB({
+                  ...charB,
+                  visibility: { ...charB.visibility, sexualDetails: e.target.checked }
+                })}
+              />
+              <span className="toggle-slider"></span>
+              <span className="toggle-label">
+                {charB.visibility.sexualDetails ? '👁️ 유저 공개' : '🔒 비공개 (AI만 참고)'}
+              </span>
+            </label>
+          </div>
+
+          <div className="sexual-detail-guide">
+            <p className="guide-text">
+              💡 <strong>수(受) 작성 가이드</strong>: 
+              구멍(40%) → 특수 반응(30%) → 유두(15%) → 성기(10%) → 체향(5%) 비율 권장<br/>
+              예시: "쪼이는 힘 매우 강함, 비자발적 점액 분비 / 수치심=흥분, 몸 떨림 / 도드라지는 유두 극도 민감 / 평균 크기 / 달콤한 코코넛 향"
+            </p>
+            <p className="guide-importance">
+              ⭐ 중요: <strong>구멍 특징</strong>이 가장 중요하며 2-3개 필수 작성!
+            </p>
+          </div>
+
+          <div className="form-grid">
+            <div className="form-group full-width">
+              <label>🎯 구멍 특징 (2-3개 필수 - 최우선 40%)</label>
+              <textarea 
+                value={charB.sexualDetails.hole || ''} 
+                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, hole: e.target.value }})}
+                placeholder="예: 쪼이는 힘 매우 강함, 비자발적 점액 분비, 특정 자극에 경련, 내벽 민감도 불균형"
+                rows="3"
+              />
+            </div>
+            <div className="form-group full-width">
+              <label>특수 반응 (2개 필수 - 30%)</label>
+              <textarea 
+                value={charB.sexualDetails.reactions || ''} 
+                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, reactions: e.target.value }})}
+                placeholder="예: 수치심=흥분, 몸 전기처럼 떨림, 경련성 반응, 눈물 흘림, 침 분비 과다"
+                rows="2"
+              />
+            </div>
+            <div className="form-group full-width">
+              <label>유두 (1개 필수 - 15%)</label>
+              <input 
+                type="text" 
+                value={charB.sexualDetails.nipple || ''} 
+                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, nipple: e.target.value }})}
+                placeholder="예: 도드라지는 유두 극도 민감, 옷에 쓸려도 반응, 색소 옅은 핑크 유두"
+              />
+            </div>
+            <div className="form-group full-width">
+              <label>성기 (1개 선택, 간략 - 10%)</label>
+              <input 
+                type="text" 
+                value={charB.sexualDetails.genital || ''} 
+                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, genital: e.target.value }})}
+                placeholder="예: 평균 크기, 작고 예쁜 형태, 쉽게 발기됨, 압도적으로 큰 크기"
+              />
+            </div>
+            <div className="form-group full-width">
+              <label>체향 (선택 - 5%)</label>
+              <input 
+                type="text" 
+                value={charB.sexualDetails.scent || ''} 
+                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, scent: e.target.value }})}
+                placeholder="예: 달콤한 코코넛/복숭아, 따뜻한 우유 향, 은은한 비누향"
+              />
+            </div>
+            <div className="form-group full-width">
+              <label>신체 특징 (떡대수/강수/공이었수만 필수)</label>
+              <input 
+                type="text" 
+                value={charB.sexualDetails.body || ''} 
+                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, body: e.target.value }})}
+                placeholder="예: 탄탄한 근육, 굵은 허벅지, 강한 악력 (일반 수는 비워도 됨)"
+              />
+            </div>
+            <div className="form-group full-width">
+              <label>기타 특수 설정 (선택)</label>
+              <textarea 
+                value={charB.sexualDetails.special || ''} 
+                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, special: e.target.value }})}
+                placeholder="오메가버스: 오메가 발정기, 슬릭 과다 분비, 달콤한 오메가 페로몬, 임신 가능 등"
+                rows="2"
+              />
+            </div>
+          </div>
+
+          <h3 className="subsection-title">🏷️ 태그</h3>
+          <div className="tag-container">
+            {COMMON_TAGS_SU.map(tag => (
+              <button
+                key={tag}
+                className={`tag-btn ${charB.tags.includes(tag) ? 'active' : ''}`}
+                onClick={() => handleTagToggle('B', tag)}
+              >
+                {tag}
+              </button>
+            ))}
+            <button className="tag-btn add-tag" onClick={() => handleAddCustomTag('B')}>
+              + 추가
+            </button>
+          </div>
+
+          <h3 className="subsection-title">✅ 선호 행동</h3>
+          <div className="action-list">
+            {charB.preferredActions.map((action, idx) => (
+              <input
+                key={idx}
+                type="text"
+                value={action}
+                onChange={(e) => handleArrayInput('B', 'preferredActions', idx, e.target.value)}
+                placeholder="예: 저항하다 굴복"
+                className="action-input"
+              />
+            ))}
+            <button className="btn-add-action" onClick={() => handleAddArrayItem('B', 'preferredActions')}>
+              + 행동 추가
+            </button>
+          </div>
+
+          <h3 className="subsection-title">❌ 비선호 행동</h3>
+          <div className="action-list">
+            {charB.avoidedActions.map((action, idx) => (
+              <input
+                key={idx}
+                type="text"
+                value={action}
+                onChange={(e) => handleArrayInput('B', 'avoidedActions', idx, e.target.value)}
+                placeholder="예: 과도한 복종"
+                className="action-input"
+              />
+            ))}
+            <button className="btn-add-action" onClick={() => handleAddArrayItem('B', 'avoidedActions')}>
+              + 행동 추가
+            </button>
+          </div>
+        </div>
+
+        {/* 시나리오 설정 */}
+        <div className="admin-section">
+          <h2 className="section-title">🎬 시나리오 설정</h2>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>두 사람의 관계</label>
+              <input type="text" value={scenario.relationship} onChange={(e) => setScenario({ ...scenario, relationship: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>시작 시간</label>
+              <input type="text" value={scenario.time} onChange={(e) => setScenario({ ...scenario, time: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>첫 만남 장소</label>
+              <input type="text" value={scenario.location} onChange={(e) => setScenario({ ...scenario, location: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>첫 만남 상황</label>
+              <textarea value={scenario.situation} onChange={(e) => setScenario({ ...scenario, situation: e.target.value })} />
+            </div>
+          </div>
+        </div>
+
+        {/* 이미지 업로드 */}
+        <div className="admin-section">
+          <h2 className="section-title">🎨 배경 이미지 (호감도별)</h2>
+          <div className="image-list">
+            {images.map((img, index) => (
+              <div key={img.id} className="image-item">
+                <div className="image-info">
+                  <strong>{img.name}</strong>
+                  <span className="threshold-badge">{img.threshold}점</span>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(index, e)}
+                  className="file-input"
+                />
+                {img.preview && <img src={img.preview} alt={img.name} className="image-preview" />}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 엔딩 시스템 */}
+        <div className="admin-section">
+          <h2 className="section-title">🎯 엔딩 시스템</h2>
+          
+          <div className="ending-guide">
+            <p className="guide-text">
+              💡 <strong>사용자의 선택에 따라 다양한 엔딩이 제공됩니다</strong><br/>
+              호감도와 행동 패턴에 따라 5가지 엔딩 + 히든 엔딩 제공
+            </p>
+          </div>
+
+          <h3 className="subsection-title">📖 서사 패턴 선택</h3>
+          <div className="narrative-pattern-selector">
+            <select
+              value={scenario.narrativePattern || 'A'}
+              onChange={(e) => setScenario({ ...scenario, narrativePattern: e.target.value })}
+              className="select-input"
+            >
+              <option value="A">A: 권력/지위 격차형</option>
+              <option value="B">B: 적대 관계형</option>
+              <option value="C">C: 운명적 만남형</option>
+              <option value="D">D: 강제 동거형</option>
+              <option value="E">E: 금기 관계형</option>
+              <option value="F">F: 과거 인연형</option>
+              <option value="G">G: 계약/거래형</option>
+              <option value="H">H: 구원/보호형</option>
+            </select>
+          </div>
+
+          <h3 className="subsection-title">🌟 엔딩 타입 (자동 생성)</h3>
+          <div className="ending-types-info">
+            <div className="ending-type-card">
+              <div className="ending-type-header">
+                <span className="ending-icon">🌟</span>
+                <strong>TRUE ENDING</strong>
+              </div>
+              <p>호감도 96-100점 / 혐오행동 0-1회</p>
+              <p className="ending-desc">가장 행복한 결말, 완전한 신뢰 관계</p>
+            </div>
+
+            <div className="ending-type-card">
+              <div className="ending-type-header">
+                <span className="ending-icon">💚</span>
+                <strong>GOOD ENDING</strong>
+              </div>
+              <p>호감도 81-95점 / 혐오행동 2-3회</p>
+              <p className="ending-desc">긍정적 결말, 안정적 관계</p>
+            </div>
+
+            <div className="ending-type-card">
+              <div className="ending-type-header">
+                <span className="ending-icon">💛</span>
+                <strong>NORMAL ENDING</strong>
+              </div>
+              <p>호감도 61-80점 / 혐오행동 4-5회</p>
+              <p className="ending-desc">애매한 관계, 친구 이상 연인 미만</p>
+            </div>
+
+            <div className="ending-type-card">
+              <div className="ending-type-header">
+                <span className="ending-icon">💔</span>
+                <strong>BAD ENDING</strong>
+              </div>
+              <p>호감도 0-60점 / 혐오행동 6회 이상</p>
+              <p className="ending-desc">관계 파탄, 비극적 이별</p>
+            </div>
+
+            <div className="ending-type-card">
+              <div className="ending-type-header">
+                <span className="ending-icon">⚫</span>
+                <strong>WORST ENDING</strong>
+              </div>
+              <p>호감도 0 이하 / 특정 혐오행동 3회 연속</p>
+              <p className="ending-desc">돌이킬 수 없는 파국</p>
+            </div>
+
+            <div className="ending-type-card">
+              <div className="ending-type-header">
+                <span className="ending-icon">🔮</span>
+                <strong>HIDDEN ENDING</strong>
+              </div>
+              <p>특수 조건 충족 시</p>
+              <p className="ending-desc">의외의 반전, 숨겨진 진실</p>
+            </div>
+          </div>
+
+          <div className="ending-info-note">
+            <p>
+              ℹ️ 엔딩은 AI가 서사 패턴과 호감도를 기반으로 자동 생성합니다.<br/>
+              선택한 서사 패턴에 맞는 엔딩이 제공됩니다.
+            </p>
+          </div>
+        </div>
+
+        {/* 저장 버튼 */}
+        <div className="admin-actions">
+          <button className="btn-save-primary" onClick={handleSaveConfig}>
+            💾 저장 (임시 저장)
+          </button>
+          
+          {currentStoryId && (
+            savedStories.find(s => s.id === currentStoryId)?.published ? (
+              <button className="btn-unpublish" onClick={handleUnpublishStory}>
+                📴 발행 취소
+              </button>
+            ) : (
+              <button className="btn-publish" onClick={handlePublishStory}>
+                🚀 발행하기 (메인 공개)
+              </button>
+            )
+          )}
+          
+          <button className="btn-download" onClick={handleDownloadConfig}>
+            📥 백업 파일 다운로드
+          </button>
+          <button 
+            className="btn-reset" 
+            onClick={() => {
+              if (window.confirm('⚠️ localStorage를 초기화하고 storyConfig.js 기본값으로 되돌립니다.\n\n계속하시겠습니까?')) {
+                localStorage.removeItem('kind_cat_config');
+                alert('✅ 초기화 완료! 페이지를 새로고침합니다.');
+                window.location.reload();
+              }
+            }}
+          >
+            🔄 초기화 (기본값으로)
+          </button>
+          <div className="instruction">
+            💡 <strong>"💾 저장"</strong>: 임시 저장 (비공개)<br/>
+            🚀 <strong>"발행하기"</strong>: 메인 화면에 공개 (사용자가 볼 수 있음)<br/>
+            📥 <strong>"백업 파일 다운로드"</strong>: 설정을 파일로 저장<br/>
+            🔄 <strong>"초기화"</strong>: storyConfig.js 기본값으로 되돌리기
+          </div>
         </div>
       </div>
     </div>
