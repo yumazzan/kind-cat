@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/kind-cat/static/css/main.ceba9ba7.css",
-    "main.js": "/kind-cat/static/js/main.b018d5cc.js",
+    "main.css": "/kind-cat/static/css/main.3e085f6b.css",
+    "main.js": "/kind-cat/static/js/main.bacc106e.js",
     "index.html": "/kind-cat/index.html",
-    "main.ceba9ba7.css.map": "/kind-cat/static/css/main.ceba9ba7.css.map",
-    "main.b018d5cc.js.map": "/kind-cat/static/js/main.b018d5cc.js.map"
+    "main.3e085f6b.css.map": "/kind-cat/static/css/main.3e085f6b.css.map",
+    "main.bacc106e.js.map": "/kind-cat/static/js/main.bacc106e.js.map"
   },
   "entrypoints": [
-    "static/css/main.ceba9ba7.css",
-    "static/js/main.b018d5cc.js"
+    "static/css/main.3e085f6b.css",
+    "static/js/main.bacc106e.js"
   ]
 }
