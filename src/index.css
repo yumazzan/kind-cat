@@ -1,27 +1,5 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
-  background: #1A1A1A;
-  color: #FFFFFF;
-  overflow: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #1A1A1A;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #C9395A;
-  border-radius: 3px;
+  margin: 0;
+  background-color: #1a1a1a;
+  color: #ffffff;
 }

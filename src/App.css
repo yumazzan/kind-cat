@@ -1,46 +1,4 @@
 .App {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.admin-link {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  background: linear-gradient(135deg, #C9395A 0%, #7D1E3A 100%);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: bold;
-  box-shadow: 0 8px 20px rgba(201, 57, 90, 0.4);
-  transition: all 0.3s ease;
-  z-index: 1000;
-  font-size: 0.95em;
-}
-
-.admin-link:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(201, 57, 90, 0.6);
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  min-height: 100vh;
+  background-color: #1a1a1a;
 }
