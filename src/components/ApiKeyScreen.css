@@ -1,70 +1,81 @@
 .apikey-screen {
   min-height: 100vh;
-  background-color: #1a1a1a;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 40px 20px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  padding: 20px;
 }
 
-.apikey-container {
-  background: #2a2a2a;
-  border: 2px solid #C9395A;
-  border-radius: 20px;
-  padding: 40px;
-  max-width: 500px;
-  width: 100%;
-  text-align: center;
-}
-
-.logo-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  margin-bottom: 15px;
-}
-
-.apikey-container h1 {
-  color: white;
-  margin-bottom: 10px;
-}
-
-.subtitle {
-  color: #C9395A;
+/* ⭐ 로고 헤더 */
+.apikey-header {
   margin-bottom: 30px;
 }
 
+.logo-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.cat-icon {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  animation: float 3s ease-in-out infinite;
+}
+
+.kindcat-typo {
+  height: 45px;
+  object-fit: contain;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* 스토리 프리뷰 */
 .story-preview {
-  background: #1a1a1a;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
+  text-align: center;
+  max-width: 500px;
+  margin-bottom: 30px;
 }
 
 .story-preview h2 {
-  color: white;
-  margin-bottom: 10px;
+  font-size: 28px;
+  color: #C9395A;
+  margin-bottom: 15px;
 }
 
 .story-preview p {
+  font-size: 16px;
   color: #aaa;
+  line-height: 1.6;
 }
 
+/* 캐릭터 탭 */
 .character-tabs {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 15px;
+  margin-bottom: 30px;
 }
 
 .character-tabs .tab {
-  flex: 1;
-  padding: 12px;
-  background: #1a1a1a;
+  padding: 12px 30px;
+  background: #2a2a2a;
   border: 2px solid #444;
-  border-radius: 10px;
-  color: white;
+  border-radius: 8px;
+  color: #fff;
   cursor: pointer;
   transition: all 0.3s;
+  font-size: 16px;
 }
 
 .character-tabs .tab.active {
@@ -72,55 +83,98 @@
   border-color: #C9395A;
 }
 
-.character-profile {
+/* 캐릭터 정보 */
+.character-info {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.character-avatar {
   width: 150px;
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  margin: 20px auto;
-}
-
-.character-info {
   margin-bottom: 20px;
+  border: 3px solid #C9395A;
 }
 
 .character-info h3 {
-  color: white;
-  margin-bottom: 5px;
+  font-size: 24px;
+  color: #C9395A;
+  margin-bottom: 10px;
 }
 
 .character-info p {
-  color: #aaa;
+  font-size: 16px;
+  color: #888;
 }
 
-.api-input {
+/* API 키 폼 */
+.apikey-form {
   width: 100%;
-  padding: 12px;
-  background: #1a1a1a;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.apikey-form label {
+  font-size: 16px;
+  color: #ddd;
+  font-weight: 500;
+}
+
+.apikey-form input {
+  padding: 15px;
+  background: #2a2a2a;
   border: 2px solid #C9395A;
-  border-radius: 10px;
-  color: white;
-  margin-bottom: 20px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
 }
 
-.start-button {
-  width: 100%;
+.apikey-form button {
   padding: 15px;
   background: #C9395A;
-  border: none;
-  border-radius: 10px;
   color: white;
-  font-size: 16px;
-  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s;
 }
 
-.api-help {
-  color: #888;
-  font-size: 12px;
-  margin-top: 20px;
+.apikey-form button:hover {
+  background: #E8749B;
+  transform: translateY(-2px);
 }
 
-.api-help a {
+.api-link {
+  text-align: center;
   color: #C9395A;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.api-link:hover {
+  color: #E8749B;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .cat-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .kindcat-typo {
+    height: 40px;
+  }
+
+  .story-preview h2 {
+    font-size: 24px;
+  }
 }
