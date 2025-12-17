@@ -354,3 +354,258 @@
     justify-content: center;
   }
 }
+
+/* 다중 이미지 업로드 */
+.affection-bg-group {
+  background: rgba(201, 57, 90, 0.05);
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.affection-bg-group h4 {
+  color: #C9395A;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.multi-image-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.multi-image-list .image-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1a1a1a;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.image-number {
+  color: #C9395A;
+  font-weight: bold;
+  min-width: 30px;
+}
+
+.btn-add-image {
+  width: 100%;
+  padding: 12px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.btn-add-image:hover {
+  background: #45a049;
+}
+
+.btn-remove-image {
+  padding: 8px 12px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.btn-remove-image:hover {
+  background: #da190b;
+}
+
+.bg-note {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(76, 175, 80, 0.1);
+  border-left: 4px solid #4CAF50;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #ddd;
+  line-height: 1.6;
+}
+
+.admin-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.admin-cat-icon {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+/* ==================== 관리자 로고 ==================== */
+.admin-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.admin-cat-icon {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* ==================== 다중 이미지 업로드 ==================== */
+.affection-bg-group {
+  background: rgba(201, 57, 90, 0.05);
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.affection-bg-group h4 {
+  color: #C9395A;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.multi-image-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.multi-image-list .image-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1a1a1a;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.image-number {
+  color: #C9395A;
+  font-weight: bold;
+  min-width: 30px;
+}
+
+.btn-add-image {
+  width: 100%;
+  padding: 12px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.btn-add-image:hover {
+  background: #45a049;
+}
+
+.btn-remove-image {
+  padding: 8px 12px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+
+.btn-remove-image:hover {
+  background: #da190b;
+}
+
+.bg-note {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(76, 175, 80, 0.1);
+  border-left: 4px solid #4CAF50;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #ddd;
+  line-height: 1.6;
+}
+
+/* ==================== 프로필 이미지 다중 ==================== */
+.avatar-upload-section .multi-image-list {
+  margin-top: 15px;
+}
+
+/* ==================== 비공개 토글 ==================== */
+.visibility-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #444;
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-switch input[type="checkbox"] {
+  width: 54px;
+  height: 28px;
+  appearance: none;
+  background: #444;
+  border-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.toggle-switch input[type="checkbox"]:checked {
+  background: #4CAF50;
+}
+
+.toggle-switch input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: white;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.3s;
+}
+
+.toggle-switch input[type="checkbox"]:checked::before {
+  transform: translateX(26px);
+}
+
+.toggle-slider {
+  display: none;
+}
+
+.toggle-label {
+  font-size: 14px;
+  color: #ddd;
+}
