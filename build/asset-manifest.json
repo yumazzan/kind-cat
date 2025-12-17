@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/kind-cat/static/css/main.b9899d47.css",
+    "main.js": "/kind-cat/static/js/main.fcdecf60.js",
+    "index.html": "/kind-cat/index.html",
+    "main.b9899d47.css.map": "/kind-cat/static/css/main.b9899d47.css.map",
+    "main.fcdecf60.js.map": "/kind-cat/static/js/main.fcdecf60.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b9899d47.css",
+    "static/js/main.fcdecf60.js"
+  ]
+}
