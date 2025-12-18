@@ -15,10 +15,38 @@ function AdminPage({ onSaveConfig }) {
   });
 
   // 캐릭터 A (공)
-  const [charA, setCharA] = useState(STORY_CONFIG.characterA);
+  const [charA, setCharA] = useState({
+  ...STORY_CONFIG.characterA,
+  tags: STORY_CONFIG.characterA?.tags || [],
+  preferredActions: STORY_CONFIG.characterA?.preferredActions || [],
+  avoidedActions: STORY_CONFIG.characterA?.avoidedActions || [],
+  callingSystem: STORY_CONFIG.characterA?.callingSystem || {},
+  bodyDetails: STORY_CONFIG.characterA?.bodyDetails || {},
+  sexualDetails: STORY_CONFIG.characterA?.sexualDetails || {},
+  visibility: STORY_CONFIG.characterA?.visibility || {
+    basicInfo: true,
+    sexualDetails: false,
+    tags: true,
+    actions: false
+  }
+  });
 
   // 캐릭터 B (수)
-  const [charB, setCharB] = useState(STORY_CONFIG.characterB);
+  const [charB, setCharB] = useState({
+  ...STORY_CONFIG.characterB,
+  tags: STORY_CONFIG.characterB?.tags || [],
+  preferredActions: STORY_CONFIG.characterB?.preferredActions || [],
+  avoidedActions: STORY_CONFIG.characterB?.avoidedActions || [],
+  callingSystem: STORY_CONFIG.characterB?.callingSystem || {},
+  bodyDetails: STORY_CONFIG.characterB?.bodyDetails || {},
+  sexualDetails: STORY_CONFIG.characterB?.sexualDetails || {},
+  visibility: STORY_CONFIG.characterB?.visibility || {
+    basicInfo: true,
+    sexualDetails: false,
+    tags: true,
+    actions: false
+  }
+  });
 
   // 시나리오
   const [scenario, setScenario] = useState({
@@ -272,16 +300,16 @@ function AdminPage({ onSaveConfig }) {
   };
 
   const handleAddCustomTag = (character) => {
-    const tag = prompt('새 태그 입력 (예: #집착공)');
-    if (tag && tag.startsWith('#')) {
-      if (character === 'A') {
-        setCharA({ ...charA, tags: [...charA.tags, tag] });
-      } else {
-        setCharB({ ...charB, tags: [...charB.tags, tag] });
-      }
-    } else if (tag) {
-      alert('태그는 #으로 시작해야 합니다!');
+  const tag = prompt('새 태그 입력 (예: #집착공)');
+  if (tag && tag.startsWith('#')) {
+    if (character === 'A') {
+      setCharA({ ...charA, tags: [...charA.tags, tag] });
+    } else {
+      setCharB({ ...charB, tags: [...charB.tags, tag] });
     }
+  } else if (tag) {
+    alert('태그는 #으로 시작해야 합니다!');
+  }
   };
 
   // 작품 태그 토글
@@ -610,6 +638,7 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
   "excitement_change": 0~+10,
   "choices": ["선택1", "선택2", "선택3", "선택4"]
 }\`;`;
+
 
     const blob = new Blob([configText], { type: 'text/javascript' });
     const url = URL.createObjectURL(blob);
@@ -1278,19 +1307,31 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
 
           <h3 className="subsection-title">🏷️ 태그</h3>
           <div className="tag-container">
-            {COMMON_TAGS_GONG.map(tag => (
-              <button
-                key={tag}
-                className={`tag-btn ${charA.tags?.includes(tag) ? 'active' : ''}`}
-                onClick={() => handleTagToggle('A', tag)}
-              >
-                {tag}
-              </button>
-            ))}
-            <button className="tag-btn add-tag" onClick={() => handleAddCustomTag('A')}>
-              + 추가
-            </button>
-          </div>
+          {COMMON_TAGS_GONG.map(tag => (
+          <button
+          key={tag}
+          className={`tag-btn ${charA.tags?.includes(tag) ? 'active' : ''}`}
+          onClick={() => handleTagToggle('A', tag)}
+          >
+          {tag}
+          </button>
+          ))}
+  
+        {/* ⭐ 추가된 커스텀 태그도 표시 */}
+          {charA.tags?.filter(tag => !COMMON_TAGS_GONG.includes(tag)).map(tag => (
+          <button
+            key={tag}
+            className="tag-btn active"
+            onClick={() => handleTagToggle('A', tag)}
+           >
+      {tag}
+    </button>
+  ))}
+  
+  <button className="tag-btn add-tag" onClick={() => handleAddCustomTag('A')}>
+    + 추가
+  </button>
+</div>
 
           <h3 className="subsection-title">✅ 선호 행동</h3>
           <div className="action-list">
