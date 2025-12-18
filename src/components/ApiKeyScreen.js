@@ -2,11 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './ApiKeyScreen.css';
 
+const navigate = useNavigate();
+
+// 로고 섹션
+<div className="logo-section" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+  <img src={`${process.env.PUBLIC_URL}/cat-icon.png`} alt="CAT" className="cat-icon" />
+  <img src={`${process.env.PUBLIC_URL}/kindcat-typo.png`} alt="KIND CAT" className="kindcat-typo" />
+</div>
+
 function ApiKeyScreen() {
   const { storyId } = useParams();
   const navigate = useNavigate();
   const [apiKey, setApiKey] = useState('');
   const [story, setStory] = useState(null);
+  
 
   useEffect(() => {
     loadStory();

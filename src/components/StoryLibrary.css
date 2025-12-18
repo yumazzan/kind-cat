@@ -262,4 +262,45 @@
     grid-template-columns: 1fr;
   }
 }
+/* 헤더 */
+.story-header {
+  background: #2a2a2a;
+  padding: 15px 20px;
+  border-bottom: 2px solid #C9395A;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
+/* ⭐ 뒤로가기 버튼 */
+.btn-back {
+  padding: 10px 20px;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.btn-back:hover {
+  background: #666;
+  transform: translateX(-3px);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  transition: transform 0.3s;
+}
+
+.header-logo:hover {
+  transform: scale(1.05);
+}
