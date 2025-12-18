@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import './StoryFlow.css';
 
 function StoryFlow() {
   const { storyId } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('A');
   const [story, setStory] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadStory();
   }, [storyId]);
 
@@ -15,8 +16,16 @@ function StoryFlow() {
     const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
     const foundStory = stories.find(s => s.id === storyId);
     if (foundStory) {
+      console.log('📖 Story loaded:', foundStory);
       setStory(foundStory);
+    } else {
+      console.error('❌ Story not found:', storyId);
     }
+  };
+
+  const handleStartStory = () => {
+    // API 키 입력 페이지로 이동
+    navigate(`/apikey/${storyId}`);
   };
 
   if (!story) {
@@ -38,10 +47,42 @@ function StoryFlow() {
             src={`${process.env.PUBLIC_URL}/cat-icon.png`}
             alt="CAT" 
             className="header-cat-icon"
+            onError={(e) => {
+              console.error('Logo failed to load');
+              e.target.style.display = 'none';
+            }}
           />
-          <h1>{story.title || story.storyTitle}</h1>
+          <img 
+            src={`${process.env.PUBLIC_URL}/kindcat-typo.png`}
+            alt="KIND CAT" 
+            className="header-kindcat-typo"
+            onError={(e) => {
+              console.error('Typo failed to load');
+              e.target.style.display = 'none';
+            }}
+          />
         </div>
       </div>
+
+      {/* 스토리 제목 */}
+      <div className="story-title-section">
+        <h1>{story.title || story.storyTitle}</h1>
+      </div>
+
+      {/* 썸네일 */}
+      {story.thumbnail && (
+        <div className="story-thumbnail-section">
+          <img 
+            src={story.thumbnail} 
+            alt={story.title}
+            className="story-thumbnail-large"
+            onError={(e) => {
+              console.error('Thumbnail failed to load:', story.thumbnail);
+              e.target.style.display = 'none';
+            }}
+          />
+        </div>
+      )}
 
       {/* 스토리 설명 */}
       <div className="story-description">
@@ -91,6 +132,7 @@ function StoryFlow() {
                 alt={`${currentChar.name} ${idx + 1}`}
                 className="profile-image"
                 onError={(e) => {
+                  console.error('Profile image failed to load:', img);
                   e.target.style.display = 'none';
                 }}
               />
@@ -178,6 +220,12 @@ function StoryFlow() {
                   <span className="value">{currentChar.sexualDetails.reactions}</span>
                 </div>
               )}
+              {currentChar.sexualDetails.nipple && (
+                <div className="info-item full-width">
+                  <span className="label">유두</span>
+                  <span className="value">{currentChar.sexualDetails.nipple}</span>
+                </div>
+              )}
               {currentChar.sexualDetails.body && (
                 <div className="info-item full-width">
                   <span className="label">신체 특징</span>
@@ -188,6 +236,12 @@ function StoryFlow() {
                 <div className="info-item full-width">
                   <span className="label">체향</span>
                   <span className="value">{currentChar.sexualDetails.scent}</span>
+                </div>
+              )}
+              {currentChar.sexualDetails.special && (
+                <div className="info-item full-width">
+                  <span className="label">특수 설정</span>
+                  <span className="value">{currentChar.sexualDetails.special}</span>
                 </div>
               )}
             </div>
@@ -224,7 +278,7 @@ function StoryFlow() {
 
       {/* 스토리 시작 버튼 */}
       <div className="story-start-section">
-        <button className="btn-start-story">
+        <button className="btn-start-story" onClick={handleStartStory}>
           🎮 스토리 시작하기
         </button>
       </div>
