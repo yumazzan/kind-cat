@@ -1,76 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import './ApiKeyScreen.css';
 
-function ApiKeyScreen({ onSubmit, story }) {
-  const [key, setKey] = useState('');
-  const [activeTab, setActiveTab] = useState('A');
+function ApiKeyScreen() {
+  const { storyId } = useParams();
+  const navigate = useNavigate();
+  const [apiKey, setApiKey] = useState('');
+  const [story, setStory] = useState(null);
 
-  const handleSubmit = () => {
-    if (key.trim()) {
-      onSubmit(key.trim());
+  useEffect(() => {
+    loadStory();
+    
+    // 이미 저장된 API 키가 있으면 자동으로 채팅으로 이동
+    const savedApiKey = localStorage.getItem('gemini_api_key');
+    if (savedApiKey) {
+      navigate(`/chat/${storyId}`);
+    }
+  }, [storyId, navigate]);
+
+  const loadStory = () => {
+    const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
+    const foundStory = stories.find(s => s.id === storyId);
+    if (foundStory) {
+      setStory(foundStory);
     }
   };
 
-  const character = activeTab === 'A' ? story.characterA : story.characterB;
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (apiKey.trim()) {
+      localStorage.setItem('gemini_api_key', apiKey.trim());
+      navigate(`/chat/${storyId}`);
+    } else {
+      alert('API 키를 입력해주세요!');
+    }
+  };
+
+  if (!story) {
+    return <div className="loading">스토리를 불러오는 중...</div>;
+  }
 
   return (
     <div className="apikey-screen">
-      <div className="apikey-container">
+      {/* 헤더 */}
+      <div className="apikey-header">
         <div className="logo-section">
-          <img src="/cat-icon.png" alt="KIND CAT" className="logo-icon" />
-          <h1>KIND CAT</h1>
-          <p className="subtitle">BL Interactive Fiction</p>
+          <img 
+            src={`${process.env.PUBLIC_URL}/cat-icon.png`}
+            alt="CAT" 
+            className="cat-icon"
+            onError={(e) => e.target.style.display = 'none'}
+          />
+          <img 
+            src={`${process.env.PUBLIC_URL}/kindcat-typo.png`}
+            alt="KIND CAT" 
+            className="kindcat-typo"
+            onError={(e) => e.target.style.display = 'none'}
+          />
         </div>
+      </div>
 
-        <div className="story-preview">
-          <h2>{story.storyTitle}</h2>
-          <p>{story.description}</p>
-        </div>
+      {/* 스토리 정보 */}
+      <div className="story-preview">
+        <h2>{story.title || story.storyTitle}</h2>
+        <p>{story.description}</p>
+      </div>
 
-        <div className="character-tabs">
-          <button 
-            className={`tab ${activeTab === 'A' ? 'active' : ''}`}
-            onClick={() => setActiveTab('A')}
-          >
-            ❤️ {story.characterA.name} (공)
-          </button>
-          <button 
-            className={`tab ${activeTab === 'B' ? 'active' : ''}`}
-            onClick={() => setActiveTab('B')}
-          >
-            ❤️ {story.characterB.name} (수)
-          </button>
-        </div>
-
-        {character.profileImage && (
-          <img src={character.profileImage} alt={character.name} className="character-profile" />
-        )}
-
-        <div className="character-info">
-          <h3>{character.name}</h3>
-          <p>{character.age}세 · {character.occupation}</p>
-        </div>
-
+      {/* API 키 입력 폼 */}
+      <form onSubmit={handleSubmit} className="apikey-form">
+        <label>🔑 Google AI Studio API Key</label>
         <input
           type="password"
-          placeholder="Gemini API 키 (AIza...)"
-          value={key}
-          onChange={(e) => setKey(e.target.value)}
-          className="api-input"
+          value={apiKey}
+          onChange={(e) => setApiKey(e.target.value)}
+          placeholder="API 키를 입력하세요"
+          className="apikey-input"
+          required
         />
+        <button type="submit" className="btn-start">스토리 시작하기</button>
+        <a 
+          href="https://aistudio.google.com/app/apikey" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="api-link"
+        >
+          🔗 API 키 발급받기 (무료)
+        </a>
+      </form>
 
-        <button onClick={handleSubmit} className="start-button">
-          스토리 시작하기
-        </button>
-
-        <p className="api-help">
-          🔑 API 키 발급:
-          <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
-            Google AI Studio
-          </a>에서 무료 발급
-          <br />
-          (gemini-2.0-flash 모델 사용)
-        </p>
+      <div className="api-info">
+        <h3>💡 API 키가 필요한 이유</h3>
+        <p>이 앱은 Google의 Gemini AI를 사용하여 대화형 스토리를 생성합니다.</p>
+        <p>API 키는 브라우저에만 저장되며, 서버로 전송되지 않습니다.</p>
       </div>
     </div>
   );
