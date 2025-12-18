@@ -16,36 +16,36 @@ function AdminPage({ onSaveConfig }) {
 
   // 캐릭터 A (공)
   const [charA, setCharA] = useState({
-  ...STORY_CONFIG.characterA,
-  tags: STORY_CONFIG.characterA?.tags || [],
-  preferredActions: STORY_CONFIG.characterA?.preferredActions || [],
-  avoidedActions: STORY_CONFIG.characterA?.avoidedActions || [],
-  callingSystem: STORY_CONFIG.characterA?.callingSystem || {},
-  bodyDetails: STORY_CONFIG.characterA?.bodyDetails || {},
-  sexualDetails: STORY_CONFIG.characterA?.sexualDetails || {},
-  visibility: STORY_CONFIG.characterA?.visibility || {
-    basicInfo: true,
-    sexualDetails: false,
-    tags: true,
-    actions: false
-  }
+    ...STORY_CONFIG.characterA,
+    tags: STORY_CONFIG.characterA?.tags || [],
+    preferredActions: STORY_CONFIG.characterA?.preferredActions || [],
+    avoidedActions: STORY_CONFIG.characterA?.avoidedActions || [],
+    callingSystem: STORY_CONFIG.characterA?.callingSystem || {},
+    bodyDetails: STORY_CONFIG.characterA?.bodyDetails || {},
+    sexualDetails: STORY_CONFIG.characterA?.sexualDetails || {},
+    visibility: STORY_CONFIG.characterA?.visibility || {
+      basicInfo: true,
+      sexualDetails: false,
+      tags: true,
+      actions: false
+    }
   });
 
   // 캐릭터 B (수)
   const [charB, setCharB] = useState({
-  ...STORY_CONFIG.characterB,
-  tags: STORY_CONFIG.characterB?.tags || [],
-  preferredActions: STORY_CONFIG.characterB?.preferredActions || [],
-  avoidedActions: STORY_CONFIG.characterB?.avoidedActions || [],
-  callingSystem: STORY_CONFIG.characterB?.callingSystem || {},
-  bodyDetails: STORY_CONFIG.characterB?.bodyDetails || {},
-  sexualDetails: STORY_CONFIG.characterB?.sexualDetails || {},
-  visibility: STORY_CONFIG.characterB?.visibility || {
-    basicInfo: true,
-    sexualDetails: false,
-    tags: true,
-    actions: false
-  }
+    ...STORY_CONFIG.characterB,
+    tags: STORY_CONFIG.characterB?.tags || [],
+    preferredActions: STORY_CONFIG.characterB?.preferredActions || [],
+    avoidedActions: STORY_CONFIG.characterB?.avoidedActions || [],
+    callingSystem: STORY_CONFIG.characterB?.callingSystem || {},
+    bodyDetails: STORY_CONFIG.characterB?.bodyDetails || {},
+    sexualDetails: STORY_CONFIG.characterB?.sexualDetails || {},
+    visibility: STORY_CONFIG.characterB?.visibility || {
+      basicInfo: true,
+      sexualDetails: false,
+      tags: true,
+      actions: false
+    }
   });
 
   // 시나리오
@@ -73,7 +73,7 @@ function AdminPage({ onSaveConfig }) {
     { id: 5, threshold: 100, name: '완전한 신뢰', file: null, preview: null }
   ]);
 
-  // ⭐ 다중 배경 이미지 (호감도별 배열)
+  // 다중 배경 이미지 (호감도별 배열)
   const [backgroundImages, setBackgroundImages] = useState({
     0: [],    // 0-20점: 여러 장 가능
     20: [],   // 21-40점
@@ -82,7 +82,7 @@ function AdminPage({ onSaveConfig }) {
     80: []    // 81-100점
   });
 
-  // ⭐ 프로필 이미지 (여러 장)
+  // 프로필 이미지 (여러 장)
   const [profileImagesA, setProfileImagesA] = useState([]);
   const [profileImagesB, setProfileImagesB] = useState([]);
 
@@ -132,83 +132,7 @@ function AdminPage({ onSaveConfig }) {
     }
   };
 
-  const handleAppIconUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setAppSettings({
-          ...appSettings,
-          icon: file,
-          iconPreview: e.target.result
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleImageUpload = (index, e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const newImages = [...images];
-        newImages[index].file = file;
-        newImages[index].preview = e.target.result;
-        setImages(newImages);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // 캐릭터 아바타 업로드
-  const handleAvatarUpload = (character, e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const avatarData = e.target.result;
-        if (character === 'A') {
-          setCharA({ ...charA, avatar: file, avatarPreview: avatarData });
-        } else {
-          setCharB({ ...charB, avatar: file, avatarPreview: avatarData });
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // 썸네일 업로드
-  const handleThumbnailUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setThumbnailPreview(e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // 파일 경로 직접 입력 (파일 시스템 방식)
-  const handleImagePathChange = (type, value, affectionLevel = null) => {
-    if (type === 'background' && affectionLevel !== null) {
-      setImageFiles({
-        ...imageFiles,
-        backgrounds: {
-          ...imageFiles.backgrounds,
-          [affectionLevel]: value
-        }
-      });
-    } else {
-      setImageFiles({
-        ...imageFiles,
-        [type]: value
-      });
-    }
-  };
-
-  // ⭐ 배경 이미지 추가 (다중)
+  // 배경 이미지 추가 (다중)
   const handleAddBackgroundImage = (affectionLevel) => {
     const path = prompt('이미지 경로 입력 (예: /images/stories/story-1/bg-0-1.jpg):');
     if (path && path.trim()) {
@@ -219,7 +143,7 @@ function AdminPage({ onSaveConfig }) {
     }
   };
 
-  // ⭐ 배경 이미지 수정
+  // 배경 이미지 수정
   const handleUpdateBackgroundImage = (affectionLevel, index, value) => {
     const updated = [...backgroundImages[affectionLevel]];
     updated[index] = value;
@@ -229,7 +153,7 @@ function AdminPage({ onSaveConfig }) {
     });
   };
 
-  // ⭐ 배경 이미지 삭제
+  // 배경 이미지 삭제
   const handleRemoveBackgroundImage = (affectionLevel, index) => {
     setBackgroundImages({
       ...backgroundImages,
@@ -237,7 +161,7 @@ function AdminPage({ onSaveConfig }) {
     });
   };
 
-  // ⭐ 프로필 이미지 추가 (공)
+  // 프로필 이미지 추가 (공)
   const handleAddProfileImageA = () => {
     const path = prompt('프로필 이미지 경로 입력:');
     if (path && path.trim()) {
@@ -245,7 +169,7 @@ function AdminPage({ onSaveConfig }) {
     }
   };
 
-  // ⭐ 프로필 이미지 추가 (수)
+  // 프로필 이미지 추가 (수)
   const handleAddProfileImageB = () => {
     const path = prompt('프로필 이미지 경로 입력:');
     if (path && path.trim()) {
@@ -253,9 +177,10 @@ function AdminPage({ onSaveConfig }) {
     }
   };
 
-  // 키워드 이미지 추가 - 인라인 입력
+  // 키워드 이미지 추가
   const [newKeyword, setNewKeyword] = useState('');
   const [newKeywordPath, setNewKeywordPath] = useState('');
+  const [keywordImageList, setKeywordImageList] = useState([]);
 
   const handleAddKeywordImage = () => {
     if (newKeyword.trim() && newKeywordPath.trim()) {
@@ -300,16 +225,24 @@ function AdminPage({ onSaveConfig }) {
   };
 
   const handleAddCustomTag = (character) => {
-  const tag = prompt('새 태그 입력 (예: #집착공)');
-  if (tag && tag.startsWith('#')) {
-    if (character === 'A') {
-      setCharA({ ...charA, tags: [...charA.tags, tag] });
-    } else {
-      setCharB({ ...charB, tags: [...charB.tags, tag] });
+    const tag = prompt('새 태그 입력 (예: #집착공)');
+    if (tag && tag.startsWith('#')) {
+      if (character === 'A') {
+        if (!charA.tags.includes(tag)) {
+          setCharA({ ...charA, tags: [...charA.tags, tag] });
+        } else {
+          alert('이미 추가된 태그입니다!');
+        }
+      } else {
+        if (!charB.tags.includes(tag)) {
+          setCharB({ ...charB, tags: [...charB.tags, tag] });
+        } else {
+          alert('이미 추가된 태그입니다!');
+        }
+      }
+    } else if (tag) {
+      alert('태그는 #으로 시작해야 합니다!');
     }
-  } else if (tag) {
-    alert('태그는 #으로 시작해야 합니다!');
-  }
   };
 
   // 작품 태그 토글
@@ -333,13 +266,17 @@ function AdminPage({ onSaveConfig }) {
     const tag = prompt(`새 ${category === 'genre' ? '장르' : category === 'mood' ? '분위기' : '상황'} 태그 입력 (예: #판타지)`);
     
     if (tag && tag.startsWith('#')) {
-      setScenario({
-        ...scenario,
-        storyTags: {
-          ...scenario.storyTags,
-          [category]: [...scenario.storyTags[category], tag]
-        }
-      });
+      if (!scenario.storyTags[category].includes(tag)) {
+        setScenario({
+          ...scenario,
+          storyTags: {
+            ...scenario.storyTags,
+            [category]: [...scenario.storyTags[category], tag]
+          }
+        });
+      } else {
+        alert('이미 추가된 태그입니다!');
+      }
     } else if (tag) {
       alert('태그는 #으로 시작해야 합니다!');
     }
@@ -378,8 +315,6 @@ function AdminPage({ onSaveConfig }) {
   const [currentStoryId, setCurrentStoryId] = useState(null);
   const [storyTitle, setStoryTitle] = useState('윤간호사 울리기');
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
-
-  // 이미지 파일 경로 관리 (파일 시스템)
   const [imageFiles, setImageFiles] = useState({
     thumbnail: '',
     profileA: '',
@@ -394,14 +329,41 @@ function AdminPage({ onSaveConfig }) {
     keywordImages: []
   });
 
-  // 키워드 이미지
-  const [keywordImageList, setKeywordImageList] = useState([]);
-
   // 컴포넌트 마운트 시 저장된 스토리 목록 로드
   useEffect(() => {
     const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
     setSavedStories(stories);
   }, []);
+
+  // 썸네일 업로드
+  const handleThumbnailUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnailPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 파일 경로 직접 입력
+  const handleImagePathChange = (type, value, affectionLevel = null) => {
+    if (type === 'background' && affectionLevel !== null) {
+      setImageFiles({
+        ...imageFiles,
+        backgrounds: {
+          ...imageFiles.backgrounds,
+          [affectionLevel]: value
+        }
+      });
+    } else {
+      setImageFiles({
+        ...imageFiles,
+        [type]: value
+      });
+    }
+  };
 
   // 설정 저장
   const handleSaveConfig = () => {
@@ -411,8 +373,8 @@ function AdminPage({ onSaveConfig }) {
       id: storyId,
       storyTitle: storyTitle,
       savedAt: new Date().toISOString(),
-      published: false,
-      publishedAt: null,
+      published: savedStories.find(s => s.id === storyId)?.published || false,
+      publishedAt: savedStories.find(s => s.id === storyId)?.publishedAt || null,
       thumbnail: imageFiles.thumbnail || thumbnailPreview,
       appSettings,
       title: scenario.title,
@@ -639,7 +601,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
   "choices": ["선택1", "선택2", "선택3", "선택4"]
 }\`;`;
 
-
     const blob = new Blob([configText], { type: 'text/javascript' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -655,8 +616,14 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
     return (
       <div className="admin-login">
         <div className="login-container">
-          <div className="admin-logo">🔐</div>
-          <h1 className="admin-title">관리자 로그인</h1>
+          <div className="admin-logo-section">
+            <img 
+              src={`${process.env.PUBLIC_URL}/cat-icon.png`}
+              alt="CAT" 
+              className="admin-cat-icon"
+            />
+            <h1 className="admin-title">🔐 관리자 로그인</h1>
+          </div>
           <form onSubmit={handleLogin}>
             <input
               type="password"
@@ -676,13 +643,62 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
   return (
     <div className="admin-page">
       <div className="admin-header">
-        <h1>🎨 KIND CAT 관리자</h1>
+        <div className="admin-logo-section">
+          <img 
+            src={`${process.env.PUBLIC_URL}/cat-icon.png`}
+            alt="CAT" 
+            className="admin-cat-icon"
+          />
+          <h1>🎨 KIND CAT 관리자</h1>
+        </div>
         <button className="logout-btn" onClick={() => setIsAuthenticated(false)}>
           로그아웃
         </button>
       </div>
 
       <div className="admin-content">
+        {/* ⭐ 저장된 스토리 목록을 맨 위로 */}
+        {savedStories.length > 0 && (
+          <div className="admin-section">
+            <h2 className="section-title">💾 저장된 스토리 목록 ({savedStories.length}개)</h2>
+            <div className="stories-grid">
+              {[...savedStories]
+                .sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt))
+                .map(story => (
+                  <div 
+                    key={story.id} 
+                    className={`story-card ${currentStoryId === story.id ? 'active' : ''}`}
+                  >
+                    <div className="story-card-header">
+                      <h4>{story.storyTitle}</h4>
+                      {currentStoryId === story.id && <span className="current-badge">현재</span>}
+                      {story.published && <span className="published-badge">발행됨</span>}
+                    </div>
+                    <p className="story-desc">{story.description}</p>
+                    <p className="story-meta">
+                      {new Date(story.savedAt).toLocaleString('ko-KR')}
+                    </p>
+                    <div className="story-card-actions">
+                      <button 
+                        className="btn-load" 
+                        onClick={() => handleLoadStory(story.id)}
+                        disabled={currentStoryId === story.id}
+                      >
+                        📂 불러오기
+                      </button>
+                      <button 
+                        className="btn-delete" 
+                        onClick={() => handleDeleteStory(story.id)}
+                      >
+                        🗑️ 삭제
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
         {/* 스토리 관리 */}
         <div className="admin-section">
           <h2 className="section-title">📚 스토리 관리</h2>
@@ -739,7 +755,7 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
               </div>
             </div>
 
-            {/* ⭐ 배경 이미지 (호감도별) - 다중 업로드 */}
+            {/* 배경 이미지 (호감도별) - 다중 업로드 */}
             <div className="background-images-section">
               <h3 className="subsection-title">🎨 배경 이미지 (호감도별)</h3>
               <p className="section-description">
@@ -959,7 +975,7 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
                         {item.imagePath && (
                           <div className="keyword-preview-container">
                             <img 
-                              src={item.imagePath} 
+                              src={`${process.env.PUBLIC_URL}${item.imagePath}`}
                               alt={item.keyword} 
                               className="keyword-preview" 
                               onError={(e) => {
@@ -996,45 +1012,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
                 ➕ 새 스토리 만들기
               </button>
             </div>
-
-            {savedStories.length > 0 && (
-              <div className="saved-stories-list">
-                <h3 className="subsection-title">저장된 스토리 목록</h3>
-                <div className="stories-grid">
-                  {savedStories.map(story => (
-                    <div 
-                      key={story.id} 
-                      className={`story-card ${currentStoryId === story.id ? 'active' : ''}`}
-                    >
-                      <div className="story-card-header">
-                        <h4>{story.storyTitle}</h4>
-                        {currentStoryId === story.id && <span className="current-badge">현재</span>}
-                        {story.published && <span className="published-badge">발행됨</span>}
-                      </div>
-                      <p className="story-desc">{story.description}</p>
-                      <p className="story-meta">
-                        {new Date(story.savedAt).toLocaleString('ko-KR')}
-                      </p>
-                      <div className="story-card-actions">
-                        <button 
-                          className="btn-load" 
-                          onClick={() => handleLoadStory(story.id)}
-                          disabled={currentStoryId === story.id}
-                        >
-                          📂 불러오기
-                        </button>
-                        <button 
-                          className="btn-delete" 
-                          onClick={() => handleDeleteStory(story.id)}
-                        >
-                          🗑️ 삭제
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -1079,10 +1056,11 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
                 .map(tag => (
                   <button
                     key={tag}
-                    className="tag-btn active"
+                    className="tag-btn active custom-tag"
                     onClick={() => handleStoryTagToggle('genre', tag)}
+                    title="커스텀 태그 (클릭하여 제거)"
                   >
-                    {tag}
+                    {tag} ✕
                   </button>
                 ))}
               <button className="tag-btn add-tag" onClick={() => handleAddStoryTag('genre')}>
@@ -1106,10 +1084,11 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
                 .map(tag => (
                   <button
                     key={tag}
-                    className="tag-btn active"
+                    className="tag-btn active custom-tag"
                     onClick={() => handleStoryTagToggle('mood', tag)}
+                    title="커스텀 태그 (클릭하여 제거)"
                   >
-                    {tag}
+                    {tag} ✕
                   </button>
                 ))}
               <button className="tag-btn add-tag" onClick={() => handleAddStoryTag('mood')}>
@@ -1133,10 +1112,11 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
                 .map(tag => (
                   <button
                     key={tag}
-                    className="tag-btn active"
+                    className="tag-btn active custom-tag"
                     onClick={() => handleStoryTagToggle('situation', tag)}
+                    title="커스텀 태그 (클릭하여 제거)"
                   >
-                    {tag}
+                    {tag} ✕
                   </button>
                 ))}
               <button className="tag-btn add-tag" onClick={() => handleAddStoryTag('situation')}>
@@ -1150,7 +1130,7 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
         <div className="admin-section">
           <h2 className="section-title">🔺 공(攻) 캐릭터</h2>
           
-          {/* ⭐ 프로필 사진 (여러 장) */}
+          {/* 프로필 사진 (여러 장) */}
           <div className="avatar-upload-section">
             <label className="avatar-label">📸 캐릭터 프로필 사진 (여러 장 가능)</label>
             
@@ -1305,33 +1285,110 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
             </div>
           </div>
 
-          <h3 className="subsection-title">🏷️ 태그</h3>
+          {/* ⭐ 태그 개선: 커스텀 태그 표시 + 개수 표시 */}
+          <h3 className="subsection-title">🏷️ 태그 ({charA.tags?.length || 0}개 선택)</h3>
           <div className="tag-container">
-          {COMMON_TAGS_GONG.map(tag => (
-          <button
-          key={tag}
-          className={`tag-btn ${charA.tags?.includes(tag) ? 'active' : ''}`}
-          onClick={() => handleTagToggle('A', tag)}
-          >
-          {tag}
-          </button>
-          ))}
-  
-        {/* ⭐ 추가된 커스텀 태그도 표시 */}
-          {charA.tags?.filter(tag => !COMMON_TAGS_GONG.includes(tag)).map(tag => (
-          <button
-            key={tag}
-            className="tag-btn active"
-            onClick={() => handleTagToggle('A', tag)}
-           >
-      {tag}
-    </button>
-  ))}
-  
-  <button className="tag-btn add-tag" onClick={() => handleAddCustomTag('A')}>
-    + 추가
-  </button>
-</div>
+            {COMMON_TAGS_GONG.map(tag => (
+              <button
+                key={tag}
+                className={`tag-btn ${charA.tags?.includes(tag) ? 'active' : ''}`}
+                onClick={() => handleTagToggle('A', tag)}
+              >
+                {tag}
+              </button>
+            ))}
+            
+            {/* 커스텀 태그 표시 */}
+            {charA.tags
+              ?.filter(tag => !COMMON_TAGS_GONG.includes(tag))
+              .map(tag => (
+                <button
+                  key={tag}
+                  className="tag-btn active custom-tag"
+                  onClick={() => handleTagToggle('A', tag)}
+                  title="커스텀 태그 (클릭하여 제거)"
+                >
+                  {tag} ✕
+                </button>
+              ))}
+            
+            <button className="tag-btn add-tag" onClick={() => handleAddCustomTag('A')}>
+              + 커스텀 태그 추가
+            </button>
+          </div>
+
+          {/* ⭐ 공개 설정 토글 개선 */}
+          <h3 className="subsection-title">👁️ 유저 공개 설정</h3>
+          <div className="visibility-controls">
+            <div className="visibility-item">
+              <div className="visibility-header">
+                <label>📋 기본 정보 (이름, 나이, 직업, 외모)</label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={charA.visibility?.basicInfo !== false}
+                    onChange={(e) => setCharA({
+                      ...charA,
+                      visibility: { ...charA.visibility, basicInfo: e.target.checked }
+                    })}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div className="visibility-item">
+              <div className="visibility-header">
+                <label>🏷️ 태그</label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={charA.visibility?.tags !== false}
+                    onChange={(e) => setCharA({
+                      ...charA,
+                      visibility: { ...charA.visibility, tags: e.target.checked }
+                    })}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div className="visibility-item">
+              <div className="visibility-header">
+                <label>🔞 성적 디테일</label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={charA.visibility?.sexualDetails === true}
+                    onChange={(e) => setCharA({
+                      ...charA,
+                      visibility: { ...charA.visibility, sexualDetails: e.target.checked }
+                    })}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+              <p className="visibility-note">⚠️ 19금 콘텐츠 - 신중하게 공개하세요</p>
+            </div>
+
+            <div className="visibility-item">
+              <div className="visibility-header">
+                <label>✅ 선호/비선호 행동</label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={charA.visibility?.actions === true}
+                    onChange={(e) => setCharA({
+                      ...charA,
+                      visibility: { ...charA.visibility, actions: e.target.checked }
+                    })}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
 
           <h3 className="subsection-title">✅ 선호 행동</h3>
           <div className="action-list">
@@ -1368,11 +1425,11 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
           </div>
         </div>
 
-        {/* 캐릭터 B (수) */}
+        {/* 캐릭터 B (수) - 동일한 구조 */}
         <div className="admin-section">
           <h2 className="section-title">🔻 수(受) 캐릭터</h2>
           
-          {/* ⭐ 프로필 사진 (여러 장) */}
+          {/* 프로필 사진 */}
           <div className="avatar-upload-section">
             <label className="avatar-label">📸 캐릭터 프로필 사진 (여러 장 가능)</label>
             
@@ -1404,10 +1461,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
             <button className="btn-add-image" onClick={handleAddProfileImageB}>
               ➕ 프로필 이미지 추가
             </button>
-            
-            <p className="avatar-note">
-              💡 권장 크기: 정사각형 (500x500px) | 여러 표정, 포즈 추가 가능
-            </p>
           </div>
 
           <h3 className="subsection-title">기본 정보</h3>
@@ -1435,15 +1488,15 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
             
             <div className="form-group">
               <label>키</label>
-              <input type="text" value={charB.bodyDetails?.height || ''} onChange={(e) => setCharB({ ...charB, bodyDetails: { ...charB.bodyDetails, height: e.target.value }})} placeholder="예: 178cm" />
+              <input type="text" value={charB.bodyDetails?.height || ''} onChange={(e) => setCharB({ ...charB, bodyDetails: { ...charB.bodyDetails, height: e.target.value }})} />
             </div>
             <div className="form-group">
               <label>체형</label>
-              <input type="text" value={charB.bodyDetails?.build || ''} onChange={(e) => setCharB({ ...charB, bodyDetails: { ...charB.bodyDetails, build: e.target.value }})} placeholder="예: 슬림탄탄" />
+              <input type="text" value={charB.bodyDetails?.build || ''} onChange={(e) => setCharB({ ...charB, bodyDetails: { ...charB.bodyDetails, build: e.target.value }})} />
             </div>
             <div className="form-group full-width">
               <label>부위별 특징</label>
-              <input type="text" value={charB.bodyDetails?.features || ''} onChange={(e) => setCharB({ ...charB, bodyDetails: { ...charB.bodyDetails, features: e.target.value }})} placeholder="예: 잘록한 허리" />
+              <input type="text" value={charB.bodyDetails?.features || ''} onChange={(e) => setCharB({ ...charB, bodyDetails: { ...charB.bodyDetails, features: e.target.value }})} />
             </div>
             
             <div className="form-group full-width">
@@ -1453,99 +1506,58 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
           </div>
 
           <h3 className="subsection-title">💕 호칭 시스템 (수 → 공)</h3>
-          <div className="calling-system-note">
-            <p>관계 점수(호감도)에 따라 수가 공을 부르는 호칭이 변화합니다</p>
-          </div>
           <div className="form-grid">
             <div className="form-group">
-              <label>0-20점 (타인)</label>
-              <input type="text" value={charB.callingSystem?.affection_0_20 || ''} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_0_20: e.target.value }})} placeholder="예: 과장님" />
+              <label>0-20점</label>
+              <input type="text" value={charB.callingSystem?.affection_0_20 || ''} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_0_20: e.target.value }})} />
             </div>
             <div className="form-group">
-              <label>21-40점 (경계)</label>
-              <input type="text" value={charB.callingSystem?.affection_21_40 || ''} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_21_40: e.target.value }})} placeholder="예: 선생님" />
+              <label>21-40점</label>
+              <input type="text" value={charB.callingSystem?.affection_21_40 || ''} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_21_40: e.target.value }})} />
             </div>
             <div className="form-group">
-              <label>41-60점 (관심)</label>
-              <input type="text" value={charB.callingSystem?.affection_41_60 || ''} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_41_60: e.target.value }})} placeholder="예: 주혁 선생님" />
+              <label>41-60점</label>
+              <input type="text" value={charB.callingSystem?.affection_41_60 || ''} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_41_60: e.target.value }})} />
             </div>
             <div className="form-group">
-              <label>61-80점 (호감)</label>
-              <input type="text" value={charB.callingSystem?.affection_61_80 || ''} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_61_80: e.target.value }})} placeholder="예: 주혁 씨" />
+              <label>61-80점</label>
+              <input type="text" value={charB.callingSystem?.affection_61_80 || ''} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_61_80: e.target.value }})} />
             </div>
             <div className="form-group">
-              <label>81-100점 (애정/신뢰)</label>
-              <input type="text" value={charB.callingSystem?.affection_81_100 || ''} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_81_100: e.target.value }})} placeholder="예: 주혁아" />
+              <label>81-100점</label>
+              <input type="text" value={charB.callingSystem?.affection_81_100 || ''} onChange={(e) => setCharB({ ...charB, callingSystem: { ...charB.callingSystem, affection_81_100: e.target.value }})} />
             </div>
           </div>
 
           <h3 className="subsection-title">🔞 성적 디테일</h3>
-
-          <div className="sexual-detail-guide">
-            <p className="guide-text">
-              💡 <strong>수(受) 작성 가이드</strong>: 
-              구멍(40%) → 특수 반응(30%) → 유두(15%) → 성기(10%) → 체향(5%)
-            </p>
-          </div>
-
           <div className="form-grid">
             <div className="form-group full-width">
-              <label>구멍 특징 (최우선)</label>
-              <textarea 
-                value={charB.sexualDetails?.hole || ''} 
-                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, hole: e.target.value }})}
-                placeholder="예: 쪼이는 힘 매우 강함, 슬릭 과다 분비"
-                rows="3"
-              />
+              <label>구멍 특징</label>
+              <textarea value={charB.sexualDetails?.hole || ''} onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, hole: e.target.value }})} rows="3" />
             </div>
             <div className="form-group full-width">
               <label>특수 반응</label>
-              <textarea 
-                value={charB.sexualDetails?.reactions || ''} 
-                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, reactions: e.target.value }})}
-                placeholder="예: 수치심=흥분, 경련성 반응"
-                rows="2"
-              />
+              <textarea value={charB.sexualDetails?.reactions || ''} onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, reactions: e.target.value }})} rows="2" />
             </div>
             <div className="form-group full-width">
               <label>유두</label>
-              <input 
-                type="text" 
-                value={charB.sexualDetails?.nipple || ''} 
-                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, nipple: e.target.value }})}
-                placeholder="예: 도드라지는 유두 극도 민감"
-              />
+              <input type="text" value={charB.sexualDetails?.nipple || ''} onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, nipple: e.target.value }})} />
             </div>
             <div className="form-group full-width">
               <label>성기</label>
-              <input 
-                type="text" 
-                value={charB.sexualDetails?.genital || ''} 
-                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, genital: e.target.value }})}
-                placeholder="예: 평균 크기"
-              />
+              <input type="text" value={charB.sexualDetails?.genital || ''} onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, genital: e.target.value }})} />
             </div>
             <div className="form-group full-width">
               <label>체향</label>
-              <input 
-                type="text" 
-                value={charB.sexualDetails?.scent || ''} 
-                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, scent: e.target.value }})}
-                placeholder="예: 달콤한 코코넛/복숭아"
-              />
+              <input type="text" value={charB.sexualDetails?.scent || ''} onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, scent: e.target.value }})} />
             </div>
             <div className="form-group full-width">
               <label>기타 특수 설정</label>
-              <textarea 
-                value={charB.sexualDetails?.special || ''} 
-                onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, special: e.target.value }})}
-                placeholder="예: 오메가 발정기, 임신 가능"
-                rows="2"
-              />
+              <textarea value={charB.sexualDetails?.special || ''} onChange={(e) => setCharB({ ...charB, sexualDetails: { ...charB.sexualDetails, special: e.target.value }})} rows="2" />
             </div>
           </div>
 
-          <h3 className="subsection-title">🏷️ 태그</h3>
+          <h3 className="subsection-title">🏷️ 태그 ({charB.tags?.length || 0}개 선택)</h3>
           <div className="tag-container">
             {COMMON_TAGS_SU.map(tag => (
               <button
@@ -1556,9 +1568,96 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
                 {tag}
               </button>
             ))}
+            
+            {charB.tags
+              ?.filter(tag => !COMMON_TAGS_SU.includes(tag))
+              .map(tag => (
+                <button
+                  key={tag}
+                  className="tag-btn active custom-tag"
+                  onClick={() => handleTagToggle('B', tag)}
+                  title="커스텀 태그 (클릭하여 제거)"
+                >
+                  {tag} ✕
+                </button>
+              ))}
+            
             <button className="tag-btn add-tag" onClick={() => handleAddCustomTag('B')}>
-              + 추가
+              + 커스텀 태그 추가
             </button>
+          </div>
+
+          {/* 공개 설정 (수) */}
+          <h3 className="subsection-title">👁️ 유저 공개 설정</h3>
+          <div className="visibility-controls">
+            <div className="visibility-item">
+              <div className="visibility-header">
+                <label>📋 기본 정보</label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={charB.visibility?.basicInfo !== false}
+                    onChange={(e) => setCharB({
+                      ...charB,
+                      visibility: { ...charB.visibility, basicInfo: e.target.checked }
+                    })}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div className="visibility-item">
+              <div className="visibility-header">
+                <label>🏷️ 태그</label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={charB.visibility?.tags !== false}
+                    onChange={(e) => setCharB({
+                      ...charB,
+                      visibility: { ...charB.visibility, tags: e.target.checked }
+                    })}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div className="visibility-item">
+              <div className="visibility-header">
+                <label>🔞 성적 디테일</label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={charB.visibility?.sexualDetails === true}
+                    onChange={(e) => setCharB({
+                      ...charB,
+                      visibility: { ...charB.visibility, sexualDetails: e.target.checked }
+                    })}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+              <p className="visibility-note">⚠️ 19금 콘텐츠</p>
+            </div>
+
+            <div className="visibility-item">
+              <div className="visibility-header">
+                <label>✅ 선호/비선호 행동</label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={charB.visibility?.actions === true}
+                    onChange={(e) => setCharB({
+                      ...charB,
+                      visibility: { ...charB.visibility, actions: e.target.checked }
+                    })}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
           </div>
 
           <h3 className="subsection-title">✅ 선호 행동</h3>
@@ -1569,7 +1668,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
                 type="text"
                 value={action}
                 onChange={(e) => handleArrayInput('B', 'preferredActions', idx, e.target.value)}
-                placeholder="예: 저항하다 굴복"
                 className="action-input"
               />
             ))}
@@ -1586,7 +1684,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
                 type="text"
                 value={action}
                 onChange={(e) => handleArrayInput('B', 'avoidedActions', idx, e.target.value)}
-                placeholder="예: 과도한 복종"
                 className="action-input"
               />
             ))}
@@ -1617,24 +1714,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
               <textarea value={scenario.situation} onChange={(e) => setScenario({ ...scenario, situation: e.target.value })} />
             </div>
           </div>
-
-          <h3 className="subsection-title">📖 서사 패턴 선택</h3>
-          <div className="narrative-pattern-selector">
-            <select
-              value={scenario.narrativePattern || 'A'}
-              onChange={(e) => setScenario({ ...scenario, narrativePattern: e.target.value })}
-              className="select-input"
-            >
-              <option value="A">A: 권력/지위 격차형</option>
-              <option value="B">B: 적대 관계형</option>
-              <option value="C">C: 운명적 만남형</option>
-              <option value="D">D: 강제 동거형</option>
-              <option value="E">E: 금기 관계형</option>
-              <option value="F">F: 과거 인연형</option>
-              <option value="G">G: 계약/거래형</option>
-              <option value="H">H: 구원/보호형</option>
-            </select>
-          </div>
         </div>
 
         {/* 저장 버튼 */}
@@ -1658,12 +1737,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
           <button className="btn-download" onClick={handleDownloadConfig}>
             📥 백업 파일 다운로드
           </button>
-          
-          <div className="instruction">
-            💡 <strong>"💾 저장"</strong>: 임시 저장 (비공개)<br/>
-            🚀 <strong>"발행하기"</strong>: 메인 화면에 공개<br/>
-            📥 <strong>"백업 파일 다운로드"</strong>: 설정을 파일로 저장
-          </div>
         </div>
       </div>
     </div>

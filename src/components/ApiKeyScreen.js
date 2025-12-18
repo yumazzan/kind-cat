@@ -2,25 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './ApiKeyScreen.css';
 
-const navigate = useNavigate();
-
-// 로고 섹션
-<div className="logo-section" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-  <img src={`${process.env.PUBLIC_URL}/cat-icon.png`} alt="CAT" className="cat-icon" />
-  <img src={`${process.env.PUBLIC_URL}/kindcat-typo.png`} alt="KIND CAT" className="kindcat-typo" />
-</div>
-
 function ApiKeyScreen() {
   const { storyId } = useParams();
   const navigate = useNavigate();
   const [apiKey, setApiKey] = useState('');
   const [story, setStory] = useState(null);
-  
 
   useEffect(() => {
     loadStory();
     
-    // 이미 저장된 API 키가 있으면 자동으로 채팅으로 이동
     const savedApiKey = localStorage.getItem('gemini_api_key');
     if (savedApiKey) {
       navigate(`/chat/${storyId}`);
@@ -51,9 +41,8 @@ function ApiKeyScreen() {
 
   return (
     <div className="apikey-screen">
-      {/* 헤더 */}
       <div className="apikey-header">
-        <div className="logo-section">
+        <div className="logo-section" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <img 
             src={`${process.env.PUBLIC_URL}/cat-icon.png`}
             alt="CAT" 
@@ -69,13 +58,11 @@ function ApiKeyScreen() {
         </div>
       </div>
 
-      {/* 스토리 정보 */}
       <div className="story-preview">
         <h2>{story.title || story.storyTitle}</h2>
         <p>{story.description}</p>
       </div>
 
-      {/* API 키 입력 폼 */}
       <form onSubmit={handleSubmit} className="apikey-form">
         <label>🔑 Google AI Studio API Key</label>
         <input

@@ -18,7 +18,6 @@ function ChatInterface() {
   }, [storyId]);
 
   useEffect(() => {
-    // 호감도에 따라 배경 이미지 변경
     if (story?.backgroundImages) {
       updateBackgroundImage();
     }
@@ -31,7 +30,6 @@ function ChatInterface() {
       console.log('📖 Story loaded for chat:', foundStory);
       setStory(foundStory);
       
-      // 첫 메시지 생성
       setMessages([
         {
           role: 'system',
@@ -62,20 +60,17 @@ function ChatInterface() {
     }
 
     if (bgArray.length > 0) {
-      // 호감도 점수에 따라 이미지 선택
       const index = Math.floor((affection % 20) / 20 * bgArray.length);
       setBackgroundImage(bgArray[Math.min(index, bgArray.length - 1)]);
     }
   };
 
-  // AI 시스템 프롬프트 생성
   const generateSystemPrompt = () => {
     if (!story) return '';
 
     const charA = story.characterA;
     const charB = story.characterB;
 
-    // 현재 호감도에 맞는 호칭 가져오기
     const getCallingName = (callingSystem, affection) => {
       if (affection <= 20) return callingSystem?.affection_0_20 || '당신';
       if (affection <= 40) return callingSystem?.affection_21_40 || '당신';
@@ -189,23 +184,18 @@ function ChatInterface() {
       const data = await response.json();
       const aiResponse = data.candidates[0].content.parts[0].text;
 
-      // JSON 파싱 시도
       try {
-        // ```json 제거
         const cleaned = aiResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         const parsed = JSON.parse(cleaned);
         
-        // 호감도 업데이트
         if (parsed.affection_change) {
           setAffection(prev => Math.max(0, Math.min(100, prev + parsed.affection_change)));
         }
 
-        // 흥분도 업데이트
         if (parsed.excitement_change) {
           setExcitement(prev => Math.max(0, Math.min(100, prev + parsed.excitement_change)));
         }
 
-        // 메시지 추가
         const newMessages = [
           { role: 'assistant', content: parsed.narration, type: 'narration' }
         ];
@@ -223,7 +213,6 @@ function ChatInterface() {
 
         setMessages(prev => [...prev, ...newMessages]);
 
-        // 선택지 표시
         if (parsed.choices && parsed.choices.length > 0) {
           setMessages(prev => [...prev, {
             role: 'choices',
@@ -234,7 +223,6 @@ function ChatInterface() {
 
       } catch (e) {
         console.error('JSON 파싱 실패:', e);
-        // JSON 파싱 실패 시 텍스트 그대로 표시
         setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
       }
 
@@ -267,7 +255,6 @@ function ChatInterface() {
         backgroundPosition: 'center'
       }}
     >
-      {/* 헤더 */}
       <div className="chat-header">
         <button className="btn-back" onClick={() => navigate('/')}>
           ← 홈
@@ -293,7 +280,6 @@ function ChatInterface() {
         </div>
       </div>
 
-      {/* 메시지 */}
       <div className="messages-container">
         {messages.map((msg, idx) => {
           if (msg.type === 'choices') {
@@ -329,7 +315,6 @@ function ChatInterface() {
         )}
       </div>
 
-      {/* 입력 */}
       <div className="input-container">
         <input
           type="text"
