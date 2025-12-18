@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './StoryLibrary.css';
 
 function StoryLibrary() {
+  const navigate = useNavigate();
   const [stories, setStories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
@@ -16,6 +17,7 @@ function StoryLibrary() {
   const loadPublishedStories = () => {
     const allStories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
     const published = allStories.filter(story => story.published);
+    console.log('📚 Published stories:', published);
     setStories(published);
   };
 
@@ -39,9 +41,13 @@ function StoryLibrary() {
 
   return (
     <div className="story-library">
-      {/* ⭐ 로고 섹션 수정 */}
+      {/* 로고 섹션 */}
       <div className="library-header">
-        <div className="logo-section">
+        <div 
+          className="logo-section" 
+          onClick={() => navigate('/')} 
+          style={{ cursor: 'pointer' }}
+        >
           <img 
             src={`${process.env.PUBLIC_URL}/cat-icon.png`}
             alt="CAT" 
@@ -92,23 +98,54 @@ function StoryLibrary() {
       <div className="story-grid">
         {filteredStories.length > 0 ? (
           filteredStories.map(story => (
-            <Link to={`/story/${story.id}`} key={story.id} className="story-card">
+            <Link 
+              to={`/story/${story.id}`} 
+              key={story.id} 
+              className="story-card"
+            >
+              {/* ⭐ 썸네일 이미지 */}
               {story.thumbnail && (
-                <img src={story.thumbnail} alt={story.title} className="story-thumbnail" />
-              )}
-              <div className="story-info">
-                <h3>{story.title}</h3>
-                <p>{story.description}</p>
-                <div className="story-tags">
-                  {story.storyTags?.genre?.slice(0, 3).map((tag, i) => (
-                    <span key={i} className="tag">{tag}</span>
-                  ))}
+                <div className="story-thumbnail-container">
+                  <img 
+                    src={`${process.env.PUBLIC_URL}${story.thumbnail}`}
+                    alt={story.title || story.storyTitle}
+                    className="story-thumbnail"
+                    onError={(e) => {
+                      console.error('Thumbnail failed to load:', story.thumbnail);
+                      e.target.style.display = 'none';
+                    }}
+                  />
                 </div>
+              )}
+              
+              <div className="story-info">
+                <h3>{story.title || story.storyTitle}</h3>
+                <p>{story.description}</p>
+                
+                {/* 작품 태그 */}
+                {story.storyTags && (
+                  <div className="story-card-tags">
+                    {story.storyTags.genre?.slice(0, 2).map((tag, i) => (
+                      <span key={i} className="tag genre">{tag}</span>
+                    ))}
+                    {story.storyTags.mood?.slice(0, 1).map((tag, i) => (
+                      <span key={i} className="tag mood">{tag}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </Link>
           ))
         ) : (
-          <p className="no-stories">발행된 스토리가 없습니다.</p>
+          <div className="no-stories">
+            <p>발행된 스토리가 없습니다.</p>
+            <button 
+              className="btn-go-admin" 
+              onClick={() => navigate('/admin')}
+            >
+              관리자 페이지로 이동
+            </button>
+          </div>
         )}
       </div>
     </div>
