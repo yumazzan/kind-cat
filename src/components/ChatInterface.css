@@ -2,8 +2,9 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #1a1a1a;
+  background: #1a1a1a; /* ⭐ 기본 배경 */
   position: relative;
+  overflow: hidden; /* ⭐ 추가 */
 }
 
 .chat-interface::before {
