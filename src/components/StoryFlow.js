@@ -5,8 +5,8 @@ import './StoryFlow.css';
 function StoryFlow() {
   const { storyId } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('A');
   const [story, setStory] = useState(null);
+  const [activeTab, setActiveTab] = useState('gong');
 
   useEffect(() => {
     loadStory();
@@ -15,17 +15,25 @@ function StoryFlow() {
   const loadStory = () => {
     const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
     const foundStory = stories.find(s => s.id === storyId);
+    
     if (foundStory) {
       console.log('📖 Story loaded:', foundStory);
       setStory(foundStory);
     } else {
       console.error('❌ Story not found:', storyId);
+      alert('스토리를 찾을 수 없습니다!');
+      navigate('/');
     }
   };
 
   const handleStartStory = () => {
-    // API 키 입력 페이지로 이동
-    navigate(`/apikey/${storyId}`);
+    const apiKey = localStorage.getItem('gemini_api_key');
+    
+    if (!apiKey) {
+      navigate(`/apikey/${storyId}`);
+    } else {
+      navigate(`/chat/${storyId}`);
+    }
   };
 
   if (!story) {
@@ -36,46 +44,36 @@ function StoryFlow() {
     );
   }
 
-  const currentChar = activeTab === 'A' ? story.characterA : story.characterB;
+  const currentChar = activeTab === 'gong' ? story.characterA : story.characterB;
+  const currentVisibility = currentChar?.visibility || {};
 
   return (
     <div className="story-flow">
       {/* 헤더 */}
       <div className="story-header">
-        <div className="header-logo">
+        <button className="btn-back" onClick={() => navigate('/')}>
+          ← 홈
+        </button>
+        
+        <div className="header-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <img 
             src={`${process.env.PUBLIC_URL}/cat-icon.png`}
             alt="CAT" 
             className="header-cat-icon"
-            onError={(e) => {
-              console.error('Logo failed to load');
-              e.target.style.display = 'none';
-            }}
-          />
-          <img 
-            src={`${process.env.PUBLIC_URL}/kindcat-typo.png`}
-            alt="KIND CAT" 
-            className="header-kindcat-typo"
-            onError={(e) => {
-              console.error('Typo failed to load');
-              e.target.style.display = 'none';
-            }}
+            onError={(e) => e.target.style.display = 'none'}
           />
         </div>
-      </div>
 
-      {/* 스토리 제목 */}
-      <div className="story-title-section">
-        <h1>{story.title || story.storyTitle}</h1>
+        <div className="header-spacer" />
       </div>
 
       {/* 썸네일 */}
       {story.thumbnail && (
         <div className="story-thumbnail-section">
           <img 
-            src={story.thumbnail} 
-            alt={story.title}
-            className="story-thumbnail-large"
+            src={`${process.env.PUBLIC_URL}${story.thumbnail}`}
+            alt={story.title || story.storyTitle}
+            className="story-detail-thumbnail"
             onError={(e) => {
               console.error('Thumbnail failed to load:', story.thumbnail);
               e.target.style.display = 'none';
@@ -84,11 +82,11 @@ function StoryFlow() {
         </div>
       )}
 
-      {/* 스토리 설명 */}
-      <div className="story-description">
-        <p>{story.description}</p>
+      {/* 스토리 정보 */}
+      <div className="story-info-section">
+        <h1>{story.title || story.storyTitle}</h1>
+        <p className="story-description">{story.description}</p>
         
-        {/* 작품 태그 */}
         {story.storyTags && (
           <div className="story-tags-display">
             {story.storyTags.genre?.map((tag, i) => (
@@ -106,29 +104,29 @@ function StoryFlow() {
 
       {/* 캐릭터 탭 */}
       <div className="character-tabs">
-        <button
-          className={`tab ${activeTab === 'A' ? 'active' : ''}`}
-          onClick={() => setActiveTab('A')}
+        <button 
+          className={`tab ${activeTab === 'gong' ? 'active' : ''}`}
+          onClick={() => setActiveTab('gong')}
         >
-          💕 {story.characterA?.name || '강주혁'} (공)
+          💪 공(攻) - {story.characterA?.name}
         </button>
-        <button
-          className={`tab ${activeTab === 'B' ? 'active' : ''}`}
-          onClick={() => setActiveTab('B')}
+        <button 
+          className={`tab ${activeTab === 'su' ? 'active' : ''}`}
+          onClick={() => setActiveTab('su')}
         >
-          ❤️ {story.characterB?.name || '윤태이'} (수)
+          💕 수(受) - {story.characterB?.name}
         </button>
       </div>
 
-      {/* 캐릭터 프로필 카드 */}
-      <div className="character-profile-card">
-        {/* 프로필 이미지 */}
+      {/* 캐릭터 정보 */}
+      <div className="character-detail">
+        {/* 프로필 이미지 갤러리 */}
         {currentChar?.profileImages && currentChar.profileImages.length > 0 && (
           <div className="profile-images-gallery">
             {currentChar.profileImages.map((img, idx) => (
               <img 
                 key={idx} 
-                src={img} 
+                src={`${process.env.PUBLIC_URL}${img}`}
                 alt={`${currentChar.name} ${idx + 1}`}
                 className="profile-image"
                 onError={(e) => {
@@ -140,54 +138,56 @@ function StoryFlow() {
           </div>
         )}
 
-        {/* 기본 정보 (항상 표시) */}
-        {currentChar?.visibility?.basicInfo !== false && (
-          <div className="character-info-section">
+        {/* 기본 정보 */}
+        {currentVisibility.basicInfo !== false && (
+          <div className="info-section">
             <h3>📋 기본 정보</h3>
             <div className="info-grid">
               <div className="info-item">
-                <span className="label">이름</span>
-                <span className="value">{currentChar.name}</span>
+                <strong>이름:</strong> {currentChar.name}
               </div>
-              <div className="info-item">
-                <span className="label">나이</span>
-                <span className="value">{currentChar.age}세</span>
-              </div>
-              <div className="info-item">
-                <span className="label">직업</span>
-                <span className="value">{currentChar.occupation}</span>
-              </div>
-              <div className="info-item full-width">
-                <span className="label">성격</span>
-                <span className="value">{currentChar.personality}</span>
-              </div>
-              {currentChar.bodyDetails && (
-                <>
-                  <div className="info-item">
-                    <span className="label">키</span>
-                    <span className="value">{currentChar.bodyDetails.height}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="label">체형</span>
-                    <span className="value">{currentChar.bodyDetails.build}</span>
-                  </div>
-                </>
+              {currentChar.age && (
+                <div className="info-item">
+                  <strong>나이:</strong> {currentChar.age}
+                </div>
               )}
-              <div className="info-item full-width">
-                <span className="label">외모</span>
-                <span className="value">{currentChar.appearance}</span>
-              </div>
-              <div className="info-item full-width">
-                <span className="label">말투</span>
-                <span className="value">{currentChar.speech}</span>
-              </div>
+              {currentChar.occupation && (
+                <div className="info-item">
+                  <strong>직업:</strong> {currentChar.occupation}
+                </div>
+              )}
+              {currentChar.personality && (
+                <div className="info-item">
+                  <strong>성격:</strong> {currentChar.personality}
+                </div>
+              )}
+              {currentChar.appearance && (
+                <div className="info-item full-width">
+                  <strong>외모:</strong> {currentChar.appearance}
+                </div>
+              )}
+              {currentChar.bodyDetails?.height && (
+                <div className="info-item">
+                  <strong>키:</strong> {currentChar.bodyDetails.height}
+                </div>
+              )}
+              {currentChar.bodyDetails?.build && (
+                <div className="info-item">
+                  <strong>체형:</strong> {currentChar.bodyDetails.build}
+                </div>
+              )}
+              {currentChar.speech && (
+                <div className="info-item full-width">
+                  <strong>말투:</strong> {currentChar.speech}
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* 태그 (공개 설정에 따라) */}
-        {currentChar?.visibility?.tags !== false && currentChar?.tags && (
-          <div className="character-info-section">
+        {/* 태그 */}
+        {currentVisibility.tags !== false && currentChar.tags && currentChar.tags.length > 0 && (
+          <div className="info-section">
             <h3>🏷️ 태그</h3>
             <div className="character-tags">
               {currentChar.tags.map((tag, idx) => (
@@ -197,77 +197,87 @@ function StoryFlow() {
           </div>
         )}
 
-        {/* 성적 디테일 (공개 설정에 따라) */}
-        {currentChar?.visibility?.sexualDetails && currentChar?.sexualDetails && (
-          <div className="character-info-section nsfw">
-            <h3>🔞 성적 디테일</h3>
+        {/* 성적 디테일 */}
+        {currentVisibility.sexualDetails === true && currentChar.sexualDetails && (
+          <div className="info-section sensitive-section">
+            <h3>🔞 성적 디테일 (19+)</h3>
             <div className="info-grid">
-              {currentChar.sexualDetails.hole && (
-                <div className="info-item full-width">
-                  <span className="label">구멍 특징</span>
-                  <span className="value">{currentChar.sexualDetails.hole}</span>
-                </div>
-              )}
-              {currentChar.sexualDetails.genital && (
-                <div className="info-item full-width">
-                  <span className="label">성기 특징</span>
-                  <span className="value">{currentChar.sexualDetails.genital}</span>
-                </div>
-              )}
-              {currentChar.sexualDetails.reactions && (
-                <div className="info-item full-width">
-                  <span className="label">특수 반응</span>
-                  <span className="value">{currentChar.sexualDetails.reactions}</span>
-                </div>
-              )}
-              {currentChar.sexualDetails.nipple && (
-                <div className="info-item full-width">
-                  <span className="label">유두</span>
-                  <span className="value">{currentChar.sexualDetails.nipple}</span>
-                </div>
-              )}
-              {currentChar.sexualDetails.body && (
-                <div className="info-item full-width">
-                  <span className="label">신체 특징</span>
-                  <span className="value">{currentChar.sexualDetails.body}</span>
-                </div>
-              )}
-              {currentChar.sexualDetails.scent && (
-                <div className="info-item full-width">
-                  <span className="label">체향</span>
-                  <span className="value">{currentChar.sexualDetails.scent}</span>
-                </div>
+              {activeTab === 'gong' ? (
+                <>
+                  {currentChar.sexualDetails.genital && (
+                    <div className="info-item full-width">
+                      <strong>성기:</strong> {currentChar.sexualDetails.genital}
+                    </div>
+                  )}
+                  {currentChar.sexualDetails.body && (
+                    <div className="info-item full-width">
+                      <strong>신체:</strong> {currentChar.sexualDetails.body}
+                    </div>
+                  )}
+                  {currentChar.sexualDetails.scent && (
+                    <div className="info-item">
+                      <strong>체향:</strong> {currentChar.sexualDetails.scent}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {currentChar.sexualDetails.hole && (
+                    <div className="info-item full-width">
+                      <strong>구멍:</strong> {currentChar.sexualDetails.hole}
+                    </div>
+                  )}
+                  {currentChar.sexualDetails.reactions && (
+                    <div className="info-item full-width">
+                      <strong>반응:</strong> {currentChar.sexualDetails.reactions}
+                    </div>
+                  )}
+                  {currentChar.sexualDetails.nipple && (
+                    <div className="info-item">
+                      <strong>유두:</strong> {currentChar.sexualDetails.nipple}
+                    </div>
+                  )}
+                  {currentChar.sexualDetails.genital && (
+                    <div className="info-item">
+                      <strong>성기:</strong> {currentChar.sexualDetails.genital}
+                    </div>
+                  )}
+                  {currentChar.sexualDetails.scent && (
+                    <div className="info-item">
+                      <strong>체향:</strong> {currentChar.sexualDetails.scent}
+                    </div>
+                  )}
+                </>
               )}
               {currentChar.sexualDetails.special && (
                 <div className="info-item full-width">
-                  <span className="label">특수 설정</span>
-                  <span className="value">{currentChar.sexualDetails.special}</span>
+                  <strong>특수:</strong> {currentChar.sexualDetails.special}
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* 선호/비선호 행동 (공개 설정에 따라) */}
-        {currentChar?.visibility?.actions && (
+        {/* 선호/비선호 행동 */}
+        {currentVisibility.actions === true && (
           <>
-            {currentChar?.preferredActions && currentChar.preferredActions.length > 0 && (
-              <div className="character-info-section">
+            {currentChar.preferredActions && currentChar.preferredActions.length > 0 && (
+              <div className="info-section">
                 <h3>✅ 선호 행동</h3>
                 <ul className="action-list">
                   {currentChar.preferredActions.map((action, idx) => (
-                    action && <li key={idx}>{action}</li>
+                    <li key={idx}>{action}</li>
                   ))}
                 </ul>
               </div>
             )}
 
-            {currentChar?.avoidedActions && currentChar.avoidedActions.length > 0 && (
-              <div className="character-info-section">
+            {currentChar.avoidedActions && currentChar.avoidedActions.length > 0 && (
+              <div className="info-section">
                 <h3>❌ 비선호 행동</h3>
                 <ul className="action-list">
                   {currentChar.avoidedActions.map((action, idx) => (
-                    action && <li key={idx}>{action}</li>
+                    <li key={idx}>{action}</li>
                   ))}
                 </ul>
               </div>
@@ -276,10 +286,10 @@ function StoryFlow() {
         )}
       </div>
 
-      {/* 스토리 시작 버튼 */}
-      <div className="story-start-section">
+      {/* 시작 버튼 */}
+      <div className="start-button-container">
         <button className="btn-start-story" onClick={handleStartStory}>
-          🎮 스토리 시작하기
+          🎭 스토리 시작하기
         </button>
       </div>
     </div>
