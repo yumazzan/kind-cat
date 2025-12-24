@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import './AdminPage.css';
 import { STORY_CONFIG } from '../config/storyConfig';
+import { ref, set } from 'firebase/database';
+import { database } from '../config/firebase';
+
+import React, { useState, useEffect } from 'react';
+import './AdminPage.css';
+import { STORY_CONFIG } from '../config/storyConfig';
 
 function AdminPage({ onSaveConfig }) {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
-  // 앱 설정
-  const [appSettings, setAppSettings] = useState({
-    icon: null,
-    iconPreview: '🐱',
-    fontFamily: 'Malgun Gothic',
-    customFont: ''
-  });
+ 
 
   // 캐릭터 A (공)
   const [charA, setCharA] = useState({
@@ -366,48 +366,54 @@ function AdminPage({ onSaveConfig }) {
   };
 
   // 설정 저장
-  const handleSaveConfig = () => {
-    const storyId = currentStoryId || Date.now().toString();
-    
-    const config = {
-      id: storyId,
-      storyTitle: storyTitle,
-      savedAt: new Date().toISOString(),
-      published: savedStories.find(s => s.id === storyId)?.published || false,
-      publishedAt: savedStories.find(s => s.id === storyId)?.publishedAt || null,
-      thumbnail: imageFiles.thumbnail || thumbnailPreview,
-      appSettings,
-      title: scenario.title,
-      description: scenario.description,
-      storyTags: scenario.storyTags,
-      characterA: {
-        ...charA,
-        avatar: null,
-        avatarPreview: imageFiles.profileA || charA.avatarPreview,
-        profileImages: profileImagesA
-      },
-      characterB: {
-        ...charB,
-        avatar: null,
-        avatarPreview: imageFiles.profileB || charB.avatarPreview,
-        profileImages: profileImagesB
-      },
-      scenario: {
-        relationship: scenario.relationship,
-        location: scenario.location,
-        situation: scenario.situation,
-        time: scenario.time,
-        narrativePattern: scenario.narrativePattern || 'A'
-      },
-      images: images.map(img => ({
-        id: img.id,
-        threshold: img.threshold,
-        name: img.name
-      })),
-      backgroundImages: backgroundImages,
-      keywordImages: keywordImageList
-    };
+const handleSaveConfig = async () => {
+  const storyId = currentStoryId || Date.now().toString();
+  
+  const config = {
+    id: storyId,
+    storyTitle: storyTitle,
+    savedAt: new Date().toISOString(),
+    published: savedStories.find(s => s.id === storyId)?.published || false,
+    publishedAt: savedStories.find(s => s.id === storyId)?.publishedAt || null,
+    thumbnail: imageFiles.thumbnail || thumbnailPreview,
+    appSettings,
+    title: scenario.title,
+    description: scenario.description,
+    storyTags: scenario.storyTags,
+    characterA: {
+      ...charA,
+      avatar: null,
+      avatarPreview: imageFiles.profileA || charA.avatarPreview,
+      profileImages: profileImagesA
+    },
+    characterB: {
+      ...charB,
+      avatar: null,
+      avatarPreview: imageFiles.profileB || charB.avatarPreview,
+      profileImages: profileImagesB
+    },
+    scenario: {
+      relationship: scenario.relationship,
+      location: scenario.location,
+      situation: scenario.situation,
+      time: scenario.time,
+      narrativePattern: scenario.narrativePattern || 'A'
+    },
+    images: images.map(img => ({
+      id: img.id,
+      threshold: img.threshold,
+      name: img.name
+    })),
+    backgroundImages: backgroundImages,
+    keywordImages: keywordImageList
+  };
 
+  try {
+    // Firebase에 저장
+    await set(ref(database, `stories/${storyId}`), config);
+    console.log('✅ Firebase 저장 성공:', storyId);
+
+    // localStorage에도 백업
     const existingIndex = savedStories.findIndex(s => s.id === storyId);
     let updatedStories;
     
@@ -427,26 +433,36 @@ function AdminPage({ onSaveConfig }) {
     setCurrentStoryId(storyId);
     localStorage.setItem('kind_cat_active_story', storyId);
     
-    alert(`✅ "${storyTitle}" 스토리가 저장되었습니다!`);
-  };
+    alert(`✅ "${storyTitle}" 스토리가 저장되었습니다! (Firebase + 로컬)`);
+  } catch (error) {
+    console.error('❌ Firebase 저장 실패:', error);
+    alert('저장 중 오류가 발생했습니다: ' + error.message);
+  }
+};
 
   // 스토리 발행
-  const handlePublishStory = () => {
-    if (!currentStoryId) {
-      alert('⚠️ 먼저 스토리를 저장해주세요!');
-      return;
-    }
+const handlePublishStory = async () => {
+  if (!currentStoryId) {
+    alert('⚠️ 먼저 스토리를 저장해주세요!');
+    return;
+  }
 
-    const story = savedStories.find(s => s.id === currentStoryId);
-    if (!story) {
-      alert('⚠️ 스토리를 찾을 수 없습니다!');
-      return;
-    }
+  const story = savedStories.find(s => s.id === currentStoryId);
+  if (!story) {
+    alert('⚠️ 스토리를 찾을 수 없습니다!');
+    return;
+  }
 
-    if (!window.confirm(`📢 "${storyTitle}" 스토리를 발행하시겠습니까?\n\n발행하면 메인 화면에 공개됩니다!`)) {
-      return;
-    }
+  if (!window.confirm(`📢 "${storyTitle}" 스토리를 발행하시겠습니까?\n\n발행하면 메인 화면에 공개됩니다!`)) {
+    return;
+  }
 
+  try {
+    // Firebase에 발행 상태 업데이트
+    await set(ref(database, `stories/${currentStoryId}/published`), true);
+    await set(ref(database, `stories/${currentStoryId}/publishedAt`), new Date().toISOString());
+
+    // localStorage도 업데이트
     const updatedStories = savedStories.map(s => 
       s.id === currentStoryId 
         ? { ...s, published: true, publishedAt: new Date().toISOString() }
@@ -457,7 +473,11 @@ function AdminPage({ onSaveConfig }) {
     setSavedStories(updatedStories);
 
     alert(`✅ "${storyTitle}" 스토리가 발행되었습니다!\n\n메인 화면에서 확인할 수 있습니다.`);
-  };
+  } catch (error) {
+    console.error('❌ 발행 실패:', error);
+    alert('발행 중 오류가 발생했습니다: ' + error.message);
+  }
+};
 
   // 발행 취소
   const handleUnpublishStory = () => {
@@ -1744,3 +1764,45 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
 }
 
 export default AdminPage;
+import { ref, set, push } from 'firebase/database';
+import { database } from '../config/firebase';
+
+// 저장 버튼 클릭 시
+const handleSave = async () => {
+  try {
+    const storyId = Date.now().toString();
+    const storyData = {
+      id: storyId,
+      title: storyTitle,
+      description: storyDescription,
+      characterA: characterA,
+      characterB: characterB,
+      scenario: scenario,
+      published: false,
+      createdAt: new Date().toISOString()
+    };
+
+    // Firebase에 저장
+    await set(ref(database, `stories/${storyId}`), storyData);
+    
+    // localStorage에도 저장 (백업)
+    const localStories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
+    localStories.push(storyData);
+    localStorage.setItem('kind_cat_stories', JSON.stringify(localStories));
+    
+    alert('✅ 스토리가 저장되었습니다!');
+  } catch (error) {
+    console.error('저장 실패:', error);
+    alert('저장 중 오류가 발생했습니다.');
+  }
+};
+
+// 발행 버튼 클릭 시
+const handlePublish = async (storyId) => {
+  try {
+    await set(ref(database, `stories/${storyId}/published`), true);
+    alert('✅ 스토리가 발행되었습니다!');
+  } catch (error) {
+    console.error('발행 실패:', error);
+  }
+};
