@@ -4,15 +4,16 @@ import { STORY_CONFIG } from '../config/storyConfig';
 import { ref, set } from 'firebase/database';
 import { database } from '../config/firebase';
 
-import React, { useState, useEffect } from 'react';
-import './AdminPage.css';
-import { STORY_CONFIG } from '../config/storyConfig';
-
 function AdminPage({ onSaveConfig }) {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
- 
+  // ⭐ appSettings 상태 추가
+  const [appSettings, setAppSettings] = useState({
+    primaryColor: '#FF69B4',
+    fontFamily: 'Noto Sans KR',
+    fontSize: 16
+  });
 
   // 캐릭터 A (공)
   const [charA, setCharA] = useState({
@@ -329,23 +330,27 @@ function AdminPage({ onSaveConfig }) {
     keywordImages: []
   });
 
-  // 컴포넌트 마운트 시 저장된 스토리 목록 로드
-  useEffect(() => {
-    const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
-    setSavedStories(stories);
-  }, []);
-
-  // 썸네일 업로드
-  const handleThumbnailUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setThumbnailPreview(e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+ // 컴포넌트 마운트 시 저장된 스토리 목록 로드
+useEffect(() => {
+  const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
+  
+  // ⭐ 기존 스토리 데이터 형식 검증 및 수정
+  const validatedStories = stories.map(story => {
+    const bgImages = story.backgroundImages || {};
+    return {
+      ...story,
+      backgroundImages: {
+        0: Array.isArray(bgImages[0]) ? bgImages[0] : [],
+        20: Array.isArray(bgImages[20]) ? bgImages[20] : [],
+        40: Array.isArray(bgImages[40]) ? bgImages[40] : [],
+        60: Array.isArray(bgImages[60]) ? bgImages[60] : [],
+        80: Array.isArray(bgImages[80]) ? bgImages[80] : []
+      }
+    };
+  });
+  
+  setSavedStories(validatedStories);
+}, []);
 
   // 파일 경로 직접 입력
   const handleImagePathChange = (type, value, affectionLevel = null) => {
@@ -365,171 +370,207 @@ function AdminPage({ onSaveConfig }) {
     }
   };
 
+  // ⭐ 이 함수를 추가하세요!
+const handleThumbnailUpload = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setThumbnailPreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
   // 설정 저장
-const handleSaveConfig = async () => {
-  const storyId = currentStoryId || Date.now().toString();
-  
-  const config = {
-    id: storyId,
-    storyTitle: storyTitle,
-    savedAt: new Date().toISOString(),
-    published: savedStories.find(s => s.id === storyId)?.published || false,
-    publishedAt: savedStories.find(s => s.id === storyId)?.publishedAt || null,
-    thumbnail: imageFiles.thumbnail || thumbnailPreview,
-    appSettings,
-    title: scenario.title,
-    description: scenario.description,
-    storyTags: scenario.storyTags,
-    characterA: {
-      ...charA,
-      avatar: null,
-      avatarPreview: imageFiles.profileA || charA.avatarPreview,
-      profileImages: profileImagesA
-    },
-    characterB: {
-      ...charB,
-      avatar: null,
-      avatarPreview: imageFiles.profileB || charB.avatarPreview,
-      profileImages: profileImagesB
-    },
-    scenario: {
-      relationship: scenario.relationship,
-      location: scenario.location,
-      situation: scenario.situation,
-      time: scenario.time,
-      narrativePattern: scenario.narrativePattern || 'A'
-    },
-    images: images.map(img => ({
-      id: img.id,
-      threshold: img.threshold,
-      name: img.name
-    })),
-    backgroundImages: backgroundImages,
-    keywordImages: keywordImageList
+  const handleSaveConfig = async () => {
+    const storyId = currentStoryId || Date.now().toString();
+    
+    const config = {
+      id: storyId,
+      storyTitle: storyTitle,
+      savedAt: new Date().toISOString(),
+      published: savedStories.find(s => s.id === storyId)?.published || false,
+      publishedAt: savedStories.find(s => s.id === storyId)?.publishedAt || null,
+      thumbnail: imageFiles.thumbnail || thumbnailPreview,
+      appSettings,
+      title: scenario.title,
+      description: scenario.description,
+      storyTags: scenario.storyTags,
+      characterA: {
+        ...charA,
+        avatar: null,
+        avatarPreview: imageFiles.profileA || charA.avatarPreview,
+        profileImages: profileImagesA
+      },
+      characterB: {
+        ...charB,
+        avatar: null,
+        avatarPreview: imageFiles.profileB || charB.avatarPreview,
+        profileImages: profileImagesB
+      },
+      scenario: {
+        relationship: scenario.relationship,
+        location: scenario.location,
+        situation: scenario.situation,
+        time: scenario.time,
+        narrativePattern: scenario.narrativePattern || 'A'
+      },
+      images: images.map(img => ({
+        id: img.id,
+        threshold: img.threshold,
+        name: img.name
+      })),
+      backgroundImages: backgroundImages,
+      keywordImages: keywordImageList
+    };
+
+    try {
+      // Firebase에 저장
+      await set(ref(database, `stories/${storyId}`), config);
+      console.log('✅ Firebase 저장 성공:', storyId);
+
+      // localStorage에도 백업
+      const existingIndex = savedStories.findIndex(s => s.id === storyId);
+      let updatedStories;
+      
+      if (existingIndex >= 0) {
+        updatedStories = [...savedStories];
+        updatedStories[existingIndex] = {
+          ...config,
+          published: updatedStories[existingIndex].published,
+          publishedAt: updatedStories[existingIndex].publishedAt
+        };
+      } else {
+        updatedStories = [...savedStories, config];
+      }
+      
+      localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
+      setSavedStories(updatedStories);
+      setCurrentStoryId(storyId);
+      localStorage.setItem('kind_cat_active_story', storyId);
+      
+      alert(`✅ "${storyTitle}" 스토리가 저장되었습니다! (Firebase + 로컬)`);
+    } catch (error) {
+      console.error('❌ Firebase 저장 실패:', error);
+      alert('저장 중 오류가 발생했습니다: ' + error.message);
+    }
   };
 
-  try {
-    // Firebase에 저장
-    await set(ref(database, `stories/${storyId}`), config);
-    console.log('✅ Firebase 저장 성공:', storyId);
-
-    // localStorage에도 백업
-    const existingIndex = savedStories.findIndex(s => s.id === storyId);
-    let updatedStories;
-    
-    if (existingIndex >= 0) {
-      updatedStories = [...savedStories];
-      updatedStories[existingIndex] = {
-        ...config,
-        published: updatedStories[existingIndex].published,
-        publishedAt: updatedStories[existingIndex].publishedAt
-      };
-    } else {
-      updatedStories = [...savedStories, config];
-    }
-    
-    localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
-    setSavedStories(updatedStories);
-    setCurrentStoryId(storyId);
-    localStorage.setItem('kind_cat_active_story', storyId);
-    
-    alert(`✅ "${storyTitle}" 스토리가 저장되었습니다! (Firebase + 로컬)`);
-  } catch (error) {
-    console.error('❌ Firebase 저장 실패:', error);
-    alert('저장 중 오류가 발생했습니다: ' + error.message);
-  }
-};
-
   // 스토리 발행
-const handlePublishStory = async () => {
-  if (!currentStoryId) {
-    alert('⚠️ 먼저 스토리를 저장해주세요!');
-    return;
-  }
+  const handlePublishStory = async () => {
+    if (!currentStoryId) {
+      alert('⚠️ 먼저 스토리를 저장해주세요!');
+      return;
+    }
 
-  const story = savedStories.find(s => s.id === currentStoryId);
-  if (!story) {
-    alert('⚠️ 스토리를 찾을 수 없습니다!');
-    return;
-  }
+    const story = savedStories.find(s => s.id === currentStoryId);
+    if (!story) {
+      alert('⚠️ 스토리를 찾을 수 없습니다!');
+      return;
+    }
 
-  if (!window.confirm(`📢 "${storyTitle}" 스토리를 발행하시겠습니까?\n\n발행하면 메인 화면에 공개됩니다!`)) {
-    return;
-  }
+    if (!window.confirm(`📢 "${storyTitle}" 스토리를 발행하시겠습니까?\n\n발행하면 메인 화면에 공개됩니다!`)) {
+      return;
+    }
 
-  try {
-    // Firebase에 발행 상태 업데이트
-    await set(ref(database, `stories/${currentStoryId}/published`), true);
-    await set(ref(database, `stories/${currentStoryId}/publishedAt`), new Date().toISOString());
+    try {
+      // Firebase에 발행 상태 업데이트
+      await set(ref(database, `stories/${currentStoryId}/published`), true);
+      await set(ref(database, `stories/${currentStoryId}/publishedAt`), new Date().toISOString());
 
-    // localStorage도 업데이트
-    const updatedStories = savedStories.map(s => 
-      s.id === currentStoryId 
-        ? { ...s, published: true, publishedAt: new Date().toISOString() }
-        : s
-    );
+      // localStorage도 업데이트
+      const updatedStories = savedStories.map(s => 
+        s.id === currentStoryId 
+          ? { ...s, published: true, publishedAt: new Date().toISOString() }
+          : s
+      );
 
-    localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
-    setSavedStories(updatedStories);
+      localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
+      setSavedStories(updatedStories);
 
-    alert(`✅ "${storyTitle}" 스토리가 발행되었습니다!\n\n메인 화면에서 확인할 수 있습니다.`);
-  } catch (error) {
-    console.error('❌ 발행 실패:', error);
-    alert('발행 중 오류가 발생했습니다: ' + error.message);
-  }
-};
+      alert(`✅ "${storyTitle}" 스토리가 발행되었습니다!\n\n메인 화면에서 확인할 수 있습니다.`);
+    } catch (error) {
+      console.error('❌ 발행 실패:', error);
+      alert('발행 중 오류가 발생했습니다: ' + error.message);
+    }
+  };
 
   // 발행 취소
-  const handleUnpublishStory = () => {
+  const handleUnpublishStory = async () => {
     if (!currentStoryId) return;
 
     if (!window.confirm(`"${storyTitle}" 스토리의 발행을 취소하시겠습니까?\n\n메인 화면에서 숨겨집니다.`)) {
       return;
     }
 
-    const updatedStories = savedStories.map(s => 
-      s.id === currentStoryId 
-        ? { ...s, published: false, publishedAt: null }
-        : s
-    );
+    try {
+      // Firebase 업데이트
+      await set(ref(database, `stories/${currentStoryId}/published`), false);
+      await set(ref(database, `stories/${currentStoryId}/publishedAt`), null);
 
-    localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
-    setSavedStories(updatedStories);
+      // localStorage 업데이트
+      const updatedStories = savedStories.map(s => 
+        s.id === currentStoryId 
+          ? { ...s, published: false, publishedAt: null }
+          : s
+      );
 
-    alert(`✅ "${storyTitle}" 스토리의 발행이 취소되었습니다!`);
+      localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
+      setSavedStories(updatedStories);
+
+      alert(`✅ "${storyTitle}" 스토리의 발행이 취소되었습니다!`);
+    } catch (error) {
+      console.error('❌ 발행 취소 실패:', error);
+      alert('발행 취소 중 오류가 발생했습니다: ' + error.message);
+    }
   };
 
   // 스토리 로드
-  const handleLoadStory = (storyId) => {
-    const story = savedStories.find(s => s.id === storyId);
-    if (!story) return;
-    
-    setCurrentStoryId(story.id);
-    setStoryTitle(story.storyTitle);
-    setThumbnailPreview(story.thumbnail || null);
-    setAppSettings(story.appSettings);
-    setScenario({
-      title: story.title,
-      description: story.description,
-      storyTags: story.storyTags,
-      relationship: story.scenario.relationship,
-      location: story.scenario.location,
-      situation: story.scenario.situation,
-      time: story.scenario.time,
-      narrativePattern: story.scenario.narrativePattern || 'A'
-    });
-    setCharA(story.characterA);
-    setCharB(story.characterB);
-    setImages(story.images);
-    setBackgroundImages(story.backgroundImages || {0: [], 20: [], 40: [], 60: [], 80: []});
-    setProfileImagesA(story.characterA.profileImages || []);
-    setProfileImagesB(story.characterB.profileImages || []);
-    setKeywordImageList(story.keywordImages || []);
-    
-    localStorage.setItem('kind_cat_active_story', storyId);
-    
-    alert(`✅ "${story.storyTitle}" 스토리를 불러왔습니다!`);
-  };
+const handleLoadStory = (storyId) => {
+  const story = savedStories.find(s => s.id === storyId);
+  if (!story) return;
+  
+  setCurrentStoryId(story.id);
+  setStoryTitle(story.storyTitle);
+  setThumbnailPreview(story.thumbnail || null);
+  setAppSettings(story.appSettings || {
+    primaryColor: '#FF69B4',
+    fontFamily: 'Noto Sans KR',
+    fontSize: 16
+  });
+  setScenario({
+    title: story.title,
+    description: story.description,
+    storyTags: story.storyTags,
+    relationship: story.scenario.relationship,
+    location: story.scenario.location,
+    situation: story.scenario.situation,
+    time: story.scenario.time,
+    narrativePattern: story.scenario.narrativePattern || 'A'
+  });
+  setCharA(story.characterA);
+  setCharB(story.characterB);
+  setImages(story.images);
+  
+  // ⭐ 이 부분 수정 - 배열 형식 보장
+  const bgImages = story.backgroundImages || {};
+  setBackgroundImages({
+    0: Array.isArray(bgImages[0]) ? bgImages[0] : [],
+    20: Array.isArray(bgImages[20]) ? bgImages[20] : [],
+    40: Array.isArray(bgImages[40]) ? bgImages[40] : [],
+    60: Array.isArray(bgImages[60]) ? bgImages[60] : [],
+    80: Array.isArray(bgImages[80]) ? bgImages[80] : []
+  });
+  
+  setProfileImagesA(story.characterA.profileImages || []);
+  setProfileImagesB(story.characterB.profileImages || []);
+  setKeywordImageList(story.keywordImages || []);
+  
+  localStorage.setItem('kind_cat_active_story', storyId);
+  
+  alert(`✅ "${story.storyTitle}" 스토리를 불러왔습니다!`);
+};
 
   // 새 스토리 생성
   const handleNewStory = () => {
@@ -544,22 +585,31 @@ const handlePublishStory = async () => {
   };
 
   // 스토리 삭제
-  const handleDeleteStory = (storyId) => {
+  const handleDeleteStory = async (storyId) => {
     const story = savedStories.find(s => s.id === storyId);
     if (!window.confirm(`"${story?.storyTitle}" 스토리를 삭제하시겠습니까?`)) {
       return;
     }
     
-    const updatedStories = savedStories.filter(s => s.id !== storyId);
-    localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
-    setSavedStories(updatedStories);
-    
-    if (currentStoryId === storyId) {
-      setCurrentStoryId(null);
-      localStorage.removeItem('kind_cat_active_story');
+    try {
+      // Firebase에서 삭제
+      await set(ref(database, `stories/${storyId}`), null);
+      
+      // localStorage에서도 삭제
+      const updatedStories = savedStories.filter(s => s.id !== storyId);
+      localStorage.setItem('kind_cat_stories', JSON.stringify(updatedStories));
+      setSavedStories(updatedStories);
+      
+      if (currentStoryId === storyId) {
+        setCurrentStoryId(null);
+        localStorage.removeItem('kind_cat_active_story');
+      }
+      
+      alert('✅ 스토리가 삭제되었습니다!');
+    } catch (error) {
+      console.error('❌ 삭제 실패:', error);
+      alert('삭제 중 오류가 발생했습니다: ' + error.message);
     }
-    
-    alert('✅ 스토리가 삭제되었습니다!');
   };
 
   // 다운로드 기능 (백업용)
@@ -1305,7 +1355,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
             </div>
           </div>
 
-          {/* ⭐ 태그 개선: 커스텀 태그 표시 + 개수 표시 */}
           <h3 className="subsection-title">🏷️ 태그 ({charA.tags?.length || 0}개 선택)</h3>
           <div className="tag-container">
             {COMMON_TAGS_GONG.map(tag => (
@@ -1318,7 +1367,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
               </button>
             ))}
             
-            {/* 커스텀 태그 표시 */}
             {charA.tags
               ?.filter(tag => !COMMON_TAGS_GONG.includes(tag))
               .map(tag => (
@@ -1337,7 +1385,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
             </button>
           </div>
 
-          {/* ⭐ 공개 설정 토글 개선 */}
           <h3 className="subsection-title">👁️ 유저 공개 설정</h3>
           <div className="visibility-controls">
             <div className="visibility-item">
@@ -1764,45 +1811,3 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
 }
 
 export default AdminPage;
-import { ref, set, push } from 'firebase/database';
-import { database } from '../config/firebase';
-
-// 저장 버튼 클릭 시
-const handleSave = async () => {
-  try {
-    const storyId = Date.now().toString();
-    const storyData = {
-      id: storyId,
-      title: storyTitle,
-      description: storyDescription,
-      characterA: characterA,
-      characterB: characterB,
-      scenario: scenario,
-      published: false,
-      createdAt: new Date().toISOString()
-    };
-
-    // Firebase에 저장
-    await set(ref(database, `stories/${storyId}`), storyData);
-    
-    // localStorage에도 저장 (백업)
-    const localStories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
-    localStories.push(storyData);
-    localStorage.setItem('kind_cat_stories', JSON.stringify(localStories));
-    
-    alert('✅ 스토리가 저장되었습니다!');
-  } catch (error) {
-    console.error('저장 실패:', error);
-    alert('저장 중 오류가 발생했습니다.');
-  }
-};
-
-// 발행 버튼 클릭 시
-const handlePublish = async (storyId) => {
-  try {
-    await set(ref(database, `stories/${storyId}/published`), true);
-    alert('✅ 스토리가 발행되었습니다!');
-  } catch (error) {
-    console.error('발행 실패:', error);
-  }
-};
