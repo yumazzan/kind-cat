@@ -1,28 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ref, onValue } from 'firebase/database';
+import { database } from '../config/firebase';
 import './StoryLibrary.css';
 
 function StoryLibrary() {
   const navigate = useNavigate();
   const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
 
   const tags = ['#오피스', '#19금', '#병원', '#학원', '#순정', '#강공', '#연상공', '#집착공'];
 
   useEffect(() => {
-    loadPublishedStories();
-  }, []);
+    // Firebase 실시간 리스너
+    const storiesRef = ref(database, 'stories');
+    
+    const unsubscribe = onValue(storiesRef, (snapshot) => {
+      const data = snapshot.val();
+      console.log('📡 Firebase 데이터:', data);
+      
+      if (data) {
+        // 임시 테스트용으로 이렇게 변경
+const storiesArray = Object.values(data)
+  // .filter(story => story.published === true)  // 주석처리
+  .sort((a, b) => new Date(b.publishedAt || b.savedAt) - new Date(a.publishedAt || a.savedAt));
 
-  const loadPublishedStories = () => {
-    const allStories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
-    const published = allStories.filter(story => story.published);
-    console.log('📚 Published stories:', published);
-    setStories(published);
-  };
+console.log('📚 모든 스토리 (필터 없음):', storiesArray);
+        console.log('📚 발행된 스토리:', storiesArray);
+        setStories(storiesArray);
+      } else {
+        console.log('⚠️ Firebase에 데이터 없음');
+        setStories([]);
+      }
+      setLoading(false);
+    }, (error) => {
+      console.error('❌ Firebase 읽기 오류:', error);
+      setLoading(false);
+    });
+
+    // 컴포넌트 언마운트 시 리스너 해제
+    return () => unsubscribe();
+  }, []);
 
   const filteredStories = stories.filter(story => {
     const matchesSearch = story.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         story.storyTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          story.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTags = selectedTags.length === 0 || 
                        selectedTags.some(tag => 
@@ -39,9 +63,19 @@ function StoryLibrary() {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="story-library">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>스토리를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="story-library">
-      {/* 로고 섹션 */}
       <div className="library-header">
         <div 
           className="logo-section" 
@@ -70,7 +104,6 @@ function StoryLibrary() {
         <p className="tagline">BL Interactive Fiction</p>
       </div>
 
-      {/* 검색 및 필터 */}
       <div className="search-section">
         <input
           type="text"
@@ -81,7 +114,6 @@ function StoryLibrary() {
         />
       </div>
 
-      {/* 태그 필터 */}
       <div className="tag-filters">
         {tags.map(tag => (
           <button
@@ -94,7 +126,6 @@ function StoryLibrary() {
         ))}
       </div>
 
-      {/* 스토리 목록 */}
       <div className="story-grid">
         {filteredStories.length > 0 ? (
           filteredStories.map(story => (
@@ -103,7 +134,6 @@ function StoryLibrary() {
               key={story.id} 
               className="story-card"
             >
-              {/* ⭐ 썸네일 이미지 */}
               {story.thumbnail && (
                 <div className="story-thumbnail-container">
                   <img 
@@ -122,7 +152,6 @@ function StoryLibrary() {
                 <h3>{story.title || story.storyTitle}</h3>
                 <p>{story.description}</p>
                 
-                {/* 작품 태그 */}
                 {story.storyTags && (
                   <div className="story-card-tags">
                     {story.storyTags.genre?.slice(0, 2).map((tag, i) => (
