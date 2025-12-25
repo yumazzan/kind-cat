@@ -198,7 +198,7 @@
   color: #888;
   font-size: 18px;
   padding: 80px 20px;
-  grid-column: 1 / -1;
+  grid-column: 1/-1;
 }
 
 /* 반응형 */
@@ -328,7 +328,7 @@
 /* ⭐ 썸네일 컨테이너 */
 .story-thumbnail-container {
   width: 100%;
-  aspect-ratio: 4 / 5; /* 800x1000 비율 */
+  aspect-ratio: 4/5; /* 800x1000 비율 */
   overflow: hidden;
   background: #1a1a1a;
 }
