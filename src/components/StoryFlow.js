@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import './StoryFlow.css';
 
 function StoryFlow() {
@@ -13,25 +15,48 @@ function StoryFlow() {
     loadStory();
   }, [storyId]);
 
-  const loadStory = () => {
+  const loadStory = async () => {
     console.log('🔍 Loading story with ID:', storyId, 'Type:', typeof storyId);
     
     try {
-      const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
-      console.log('📚 All stories:', stories);
+      // 1. 먼저 Firebase에서 찾기
+      console.log('🔥 Checking Firebase...');
+      const docRef = doc(db, 'stories', String(storyId));
+      const docSnap = await getDoc(docRef);
       
-      // String 비교로 ID 매칭 (숫자/문자열 모두 대응)
+      if (docSnap.exists()) {
+        const firebaseStory = { id: docSnap.id, ...docSnap.data() };
+        console.log('✅ Story found in Firebase:', firebaseStory);
+        setStory(firebaseStory);
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('⚠️ Not found in Firebase, checking localStorage...');
+      
+      // 2. Firebase에 없으면 localStorage에서 찾기
+      const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
+      console.log('📚 Local stories:', stories);
+      
       const foundStory = stories.find(s => String(s.id) === String(storyId));
       
       if (foundStory) {
-        console.log('✅ Story found:', foundStory);
+        console.log('✅ Story found in localStorage:', foundStory);
         setStory(foundStory);
         setIsLoading(false);
       } else {
-        console.error('❌ Story not found with id:', storyId);
-        console.log('Available IDs:', stories.map(s => ({ id: s.id, type: typeof s.id })));
+        console.error('❌ Story not found anywhere with id:', storyId);
         
-        // 약간의 지연 후 에러 표시 (로딩 상태 보여주기)
+        // 디버깅: 사용 가능한 모든 스토리 ID 출력
+        try {
+          const allStoriesRef = collection(db, 'stories');
+          const allStoriesSnap = await getDocs(allStoriesRef);
+          console.log('📋 Available Firebase stories:', allStoriesSnap.docs.map(d => d.id));
+        } catch (e) {
+          console.log('Could not fetch Firebase stories list');
+        }
+        console.log('📋 Available localStorage IDs:', stories.map(s => s.id));
+        
         setTimeout(() => {
           setIsLoading(false);
           alert('스토리를 찾을 수 없습니다!');
@@ -40,6 +65,22 @@ function StoryFlow() {
       }
     } catch (error) {
       console.error('❌ Error loading story:', error);
+      
+      // Firebase 오류 시 localStorage만 확인
+      try {
+        const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
+        const foundStory = stories.find(s => String(s.id) === String(storyId));
+        
+        if (foundStory) {
+          console.log('✅ Fallback: Story found in localStorage:', foundStory);
+          setStory(foundStory);
+          setIsLoading(false);
+          return;
+        }
+      } catch (localError) {
+        console.error('LocalStorage error:', localError);
+      }
+      
       setIsLoading(false);
       alert('스토리 로딩 중 오류가 발생했습니다.');
       navigate('/');
