@@ -562,3 +562,294 @@
     font-size: 24px;
   }
 }
+
+/* ============================================
+   Tinder 스타일 캐릭터 카드 CSS
+   기존 StoryFlow.css에 추가하세요
+   ============================================ */
+
+/* 카드 컨테이너 */
+.character-card-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* Tinder 카드 */
+.tinder-card {
+  width: 100%;
+  max-width: 380px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #1a1a2e;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* 이미지 영역 */
+.card-image-area {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+  overflow: hidden;
+}
+
+/* 메인 이미지 */
+.card-main-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* 이미지 없을 때 */
+.card-no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+}
+
+.card-no-image span {
+  font-size: 64px;
+  margin-bottom: 10px;
+}
+
+.card-no-image p {
+  font-size: 14px;
+}
+
+/* 이미지 인디케이터 (상단 바) */
+.image-indicators {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.indicator {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+
+.indicator.active {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* 이미지 네비게이션 (좌우 터치 영역) */
+.image-nav {
+  position: absolute;
+  top: 0;
+  bottom: 100px;
+  width: 50%;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.image-nav.prev {
+  left: 0;
+}
+
+.image-nav.next {
+  right: 0;
+}
+
+/* 그라데이션 오버레이 */
+.card-gradient-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.6) 40%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+}
+
+/* 카드 위 정보 오버레이 */
+.card-overlay-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  z-index: 10;
+}
+
+/* 이름 + 나이 */
+.card-name-age {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.card-name-age h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.card-age {
+  font-size: 24px;
+  font-weight: 400;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* 직업 + 키 */
+.card-subtitle {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 12px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.card-subtitle span {
+  display: inline;
+}
+
+/* 태그 */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.card-tag {
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* 상세 정보 (카드 하단) */
+.character-detail-below {
+  padding: 0 20px 20px;
+}
+
+.character-detail-below .info-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.character-detail-below .info-section h3 {
+  font-size: 16px;
+  color: #fff;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.character-detail-below .info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.character-detail-below .info-item {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.character-detail-below .info-item strong {
+  color: #ff69b4;
+  margin-right: 6px;
+}
+
+.character-detail-below .info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+/* 민감 정보 섹션 */
+.character-detail-below .sensitive-section {
+  background: rgba(255, 100, 100, 0.1);
+  border: 1px solid rgba(255, 100, 100, 0.2);
+}
+
+/* 선호/비선호 행동 리스트 */
+.character-detail-below .action-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.character-detail-below .action-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+.character-detail-below .action-list li:last-child {
+  border-bottom: none;
+}
+
+.character-detail-below .action-list li::before {
+  content: "•";
+  margin-right: 8px;
+  color: #ff69b4;
+}
+
+/* 기존 profile-images-gallery 숨기기 (Tinder 카드로 대체) */
+.profile-images-gallery {
+  display: none;
+}
+
+/* 기존 character-detail 숨기기 (새 레이아웃으로 대체) */
+.character-detail {
+  display: none;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .tinder-card {
+    max-width: 100%;
+    border-radius: 0;
+  }
+  
+  .character-card-container {
+    padding: 0;
+  }
+  
+  .card-name-age h2 {
+    font-size: 24px;
+  }
+  
+  .card-age {
+    font-size: 20px;
+  }
+  
+  .card-subtitle {
+    font-size: 14px;
+  }
+  
+  .card-tag {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+}
