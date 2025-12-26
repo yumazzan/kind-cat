@@ -1,13 +1,16 @@
 module.exports = {
   webpack: {
-    configure: (webpackConfig) => {
-      // CSS Minimizer 완전 제거
-      webpackConfig.optimization.minimizer = webpackConfig.optimization.minimizer.filter(
-        (plugin) => {
-          return plugin.constructor.name !== 'CssMinimizerPlugin';
-        }
-      );
-      return webpackConfig;
+    configure: {
+      ignoreWarnings: [
+        function ignoreSourcemapsloaderWarnings(warning) {
+          return (
+            warning.module &&
+            warning.module.resource.includes("node_modules") &&
+            warning.details &&
+            warning.details.includes("source-map-loader")
+          );
+        },
+      ],
     },
   },
 };

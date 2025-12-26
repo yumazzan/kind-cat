@@ -11,6 +11,7 @@ function ChatInterface() {
   const [affection, setAffection] = useState(0);
   const [excitement, setExcitement] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingStory, setIsLoadingStory] = useState(true);
   const [backgroundImage, setBackgroundImage] = useState(null);
   const messagesEndRef = useRef(null);
 
@@ -34,12 +35,17 @@ function ChatInterface() {
   }, [affection, story]);
 
   const loadStory = () => {
+    console.log('🔍 Loading story for chat with ID:', storyId, 'Type:', typeof storyId);
+    
     try {
       const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
-      const foundStory = stories.find(s => s.id === storyId);
+      console.log('📚 All stories:', stories);
+      
+      // String 비교로 ID 매칭 (숫자/문자열 모두 대응)
+      const foundStory = stories.find(s => String(s.id) === String(storyId));
       
       if (foundStory) {
-        console.log('📖 Story loaded for chat:', foundStory);
+        console.log('✅ Story loaded for chat:', foundStory);
         setStory(foundStory);
         
         // 시작 메시지
@@ -50,13 +56,22 @@ function ChatInterface() {
             type: 'narration'
           }
         ]);
+        
+        setIsLoadingStory(false);
       } else {
-        console.error('❌ Story not found:', storyId);
-        alert('스토리를 찾을 수 없습니다!');
-        navigate('/');
+        console.error('❌ Story not found with id:', storyId);
+        console.log('Available IDs:', stories.map(s => ({ id: s.id, type: typeof s.id })));
+        
+        // 약간의 지연 후 에러 표시
+        setTimeout(() => {
+          setIsLoadingStory(false);
+          alert('스토리를 찾을 수 없습니다!');
+          navigate('/');
+        }, 500);
       }
     } catch (error) {
       console.error('❌ Error loading story:', error);
+      setIsLoadingStory(false);
       alert('스토리 로딩 중 오류가 발생했습니다.');
       navigate('/');
     }
@@ -324,10 +339,29 @@ function ChatInterface() {
     }
   };
 
+  // 로딩 중
+  if (isLoadingStory) {
+    return (
+      <div className="chat-interface">
+        <div className="loading">
+          <div className="loading-spinner"></div>
+          <p>스토리를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 스토리 없음
   if (!story) {
     return (
       <div className="chat-interface">
-        <div className="loading">스토리를 불러오는 중...</div>
+        <div className="error-container">
+          <h2>⚠️ 스토리를 찾을 수 없습니다</h2>
+          <p>스토리 ID: {storyId}</p>
+          <button className="btn-back" onClick={() => navigate('/')}>
+            홈으로 돌아가기
+          </button>
+        </div>
       </div>
     );
   }

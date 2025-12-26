@@ -1,4 +1,3 @@
-cat > package.json << 'EOF'
 {
   "name": "kind-cat",
   "version": "1.0.0",
@@ -6,16 +5,15 @@ cat > package.json << 'EOF'
   "homepage": "https://yumazzan.github.io/kind-cat",
   "dependencies": {
     "firebase": "^12.7.0",
-    "gh-pages": "^6.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
     "react-scripts": "5.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "BUILD_PATH='./build' react-scripts --max_old_space_size=4096 build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
@@ -38,7 +36,7 @@ cat > package.json << 'EOF'
     ]
   },
   "devDependencies": {
-    "@craco/craco": "^7.1.0"
+    "@craco/craco": "^7.1.0",
+    "gh-pages": "^6.3.0"
   }
 }
-EOF

@@ -7,21 +7,41 @@ function StoryFlow() {
   const navigate = useNavigate();
   const [story, setStory] = useState(null);
   const [activeTab, setActiveTab] = useState('gong');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadStory();
   }, [storyId]);
 
   const loadStory = () => {
-    const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
-    const foundStory = stories.find(s => s.id === storyId);
+    console.log('🔍 Loading story with ID:', storyId, 'Type:', typeof storyId);
     
-    if (foundStory) {
-      console.log('📖 Story loaded:', foundStory);
-      setStory(foundStory);
-    } else {
-      console.error('❌ Story not found:', storyId);
-      alert('스토리를 찾을 수 없습니다!');
+    try {
+      const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
+      console.log('📚 All stories:', stories);
+      
+      // String 비교로 ID 매칭 (숫자/문자열 모두 대응)
+      const foundStory = stories.find(s => String(s.id) === String(storyId));
+      
+      if (foundStory) {
+        console.log('✅ Story found:', foundStory);
+        setStory(foundStory);
+        setIsLoading(false);
+      } else {
+        console.error('❌ Story not found with id:', storyId);
+        console.log('Available IDs:', stories.map(s => ({ id: s.id, type: typeof s.id })));
+        
+        // 약간의 지연 후 에러 표시 (로딩 상태 보여주기)
+        setTimeout(() => {
+          setIsLoading(false);
+          alert('스토리를 찾을 수 없습니다!');
+          navigate('/');
+        }, 500);
+      }
+    } catch (error) {
+      console.error('❌ Error loading story:', error);
+      setIsLoading(false);
+      alert('스토리 로딩 중 오류가 발생했습니다.');
       navigate('/');
     }
   };
@@ -36,10 +56,29 @@ function StoryFlow() {
     }
   };
 
+  // 로딩 중
+  if (isLoading) {
+    return (
+      <div className="story-flow">
+        <div className="loading">
+          <div className="loading-spinner"></div>
+          <p>스토리를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 스토리 없음
   if (!story) {
     return (
       <div className="story-flow">
-        <div className="loading">스토리를 불러오는 중...</div>
+        <div className="error-container">
+          <h2>⚠️ 스토리를 찾을 수 없습니다</h2>
+          <p>스토리 ID: {storyId}</p>
+          <button className="btn-back" onClick={() => navigate('/')}>
+            홈으로 돌아가기
+          </button>
+        </div>
       </div>
     );
   }
@@ -60,6 +99,12 @@ function StoryFlow() {
             src={`${process.env.PUBLIC_URL}/cat-icon.png`}
             alt="CAT" 
             className="header-cat-icon"
+            onError={(e) => e.target.style.display = 'none'}
+          />
+          <img 
+            src={`${process.env.PUBLIC_URL}/kindcat-typo.png`}
+            alt="KIND CAT" 
+            className="header-kindcat-typo"
             onError={(e) => e.target.style.display = 'none'}
           />
         </div>

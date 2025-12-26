@@ -1,0 +1,12 @@
+{
+  "name": "firestore-upload",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Upload story to Firestore",
+  "scripts": {
+    "upload": "node uploadStory.mjs"
+  },
+  "dependencies": {
+    "firebase": "^11.1.0"
+  }
+}

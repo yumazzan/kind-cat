@@ -1,20 +1,22 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
 import StoryLibrary from './components/StoryLibrary';
 import StoryFlow from './components/StoryFlow';
+import ApiKeyScreen from './components/ApiKeyScreen';
+import ChatInterface from './components/ChatInterface';
 import AdminPage from './components/AdminPage';
+import './App.css';
 
 function App() {
   return (
     <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/" element={<StoryLibrary />} />
-          <Route path="/story/:storyId" element={<StoryFlow />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<StoryLibrary />} />
+        <Route path="/story/:storyId" element={<StoryFlow />} />
+        <Route path="/apikey/:storyId" element={<ApiKeyScreen />} />
+        <Route path="/chat/:storyId" element={<ChatInterface />} />
+        <Route path="/admin" element={<AdminPage />} />
+      </Routes>
     </Router>
   );
 }

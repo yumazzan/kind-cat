@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './AdminPage.css';
 import { STORY_CONFIG } from '../config/storyConfig';
-import { ref, set } from 'firebase/database';
-import { database } from '../config/firebase';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 function AdminPage({ onSaveConfig }) {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
-  // ⭐ appSettings 상태 추가
   const [appSettings, setAppSettings] = useState({
     primaryColor: '#FF69B4',
     fontFamily: 'Noto Sans KR',
@@ -76,11 +75,11 @@ function AdminPage({ onSaveConfig }) {
 
   // 다중 배경 이미지 (호감도별 배열)
   const [backgroundImages, setBackgroundImages] = useState({
-    0: [],    // 0-20점: 여러 장 가능
-    20: [],   // 21-40점
-    40: [],   // 41-60점
-    60: [],   // 61-80점
-    80: []    // 81-100점
+    0: [],
+    20: [],
+    40: [],
+    60: [],
+    80: []
   });
 
   // 프로필 이미지 (여러 장)
@@ -330,27 +329,49 @@ function AdminPage({ onSaveConfig }) {
     keywordImages: []
   });
 
- // 컴포넌트 마운트 시 저장된 스토리 목록 로드
-useEffect(() => {
-  const stories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
-  
-  // ⭐ 기존 스토리 데이터 형식 검증 및 수정
-  const validatedStories = stories.map(story => {
-    const bgImages = story.backgroundImages || {};
-    return {
-      ...story,
-      backgroundImages: {
-        0: Array.isArray(bgImages[0]) ? bgImages[0] : [],
-        20: Array.isArray(bgImages[20]) ? bgImages[20] : [],
-        40: Array.isArray(bgImages[40]) ? bgImages[40] : [],
-        60: Array.isArray(bgImages[60]) ? bgImages[60] : [],
-        80: Array.isArray(bgImages[80]) ? bgImages[80] : []
+  useEffect(() => {
+    const loadStories = async () => {
+      const localStories = JSON.parse(localStorage.getItem('kind_cat_stories') || '[]');
+      
+      try {
+        const { collection, onSnapshot } = await import('firebase/firestore');
+        const storiesRef = collection(db, 'stories');
+        
+        const unsubscribe = onSnapshot(storiesRef, (snapshot) => {
+          if (!snapshot.empty) {
+            const firestoreStories = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+
+            const mergedStories = [...firestoreStories];
+            localStories.forEach(localStory => {
+              const existsInFirestore = firestoreStories.find(fs => fs.id === localStory.id);
+              if (!existsInFirestore) {
+                mergedStories.push(localStory);
+              }
+            });
+
+            console.log('📚 불러온 스토리:', mergedStories);
+            setSavedStories(mergedStories);
+          } else {
+            console.log('📦 로컬 스토리만 사용');
+            setSavedStories(localStories);
+          }
+        }, (error) => {
+          console.error('❌ Firestore 읽기 오류, 로컬만 사용:', error);
+          setSavedStories(localStories);
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error('❌ Firestore 연결 실패, 로컬만 사용:', error);
+        setSavedStories(localStories);
       }
     };
-  });
-  
-  setSavedStories(validatedStories);
-}, []);
+
+    loadStories();
+  }, []);
 
   // 파일 경로 직접 입력
   const handleImagePathChange = (type, value, affectionLevel = null) => {
@@ -370,17 +391,95 @@ useEffect(() => {
     }
   };
 
-  // ⭐ 이 함수를 추가하세요!
-const handleThumbnailUpload = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setThumbnailPreview(e.target.result);
+  // 썸네일 업로드
+  const handleThumbnailUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnailPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // JSON 파일에서 불러오기
+  const handleImportFromJSON = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,.mjs,.js';
+    
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          let content = event.target.result;
+          
+          // .mjs 파일 처리: STORY_CONFIG 추출
+          if (file.name.endsWith('.mjs') || file.name.endsWith('.js')) {
+            const configMatch = content.match(/const STORY_CONFIG = ({[\s\S]*?});/);
+            if (configMatch) {
+              content = configMatch[1];
+            }
+          }
+          
+          const data = JSON.parse(content);
+          
+          // 새 스토리 ID 생성
+          const newStoryId = Date.now().toString();
+          
+          // 상태 업데이트
+          setCurrentStoryId(newStoryId);
+          setStoryTitle(data.title || '가져온 스토리');
+          setThumbnailPreview(data.thumbnail || null);
+          
+          setScenario({
+            title: data.title,
+            description: data.description,
+            storyTags: data.storyTags || {
+              genre: ['#로맨스'],
+              mood: ['#달달'],
+              situation: ['#첫만남']
+            },
+            relationship: data.scenario?.relationship || '',
+            location: data.scenario?.location || '',
+            situation: data.scenario?.situation || '',
+            time: data.scenario?.time || '',
+            narrativePattern: data.scenario?.narrativePattern || 'A'
+          });
+          
+          setCharA(data.characterA);
+          setCharB(data.characterB);
+          setImages(data.images || []);
+          
+          const bgImages = data.backgroundImages || {};
+          setBackgroundImages({
+            0: Array.isArray(bgImages[0]) ? bgImages[0] : [],
+            20: Array.isArray(bgImages[20]) ? bgImages[20] : [],
+            40: Array.isArray(bgImages[40]) ? bgImages[40] : [],
+            60: Array.isArray(bgImages[60]) ? bgImages[60] : [],
+            80: Array.isArray(bgImages[80]) ? bgImages[80] : []
+          });
+          
+          setProfileImagesA(data.characterA?.profileImages || []);
+          setProfileImagesB(data.characterB?.profileImages || []);
+          setKeywordImageList(data.keywordImages || []);
+          
+          alert('✅ JSON 파일에서 스토리를 성공적으로 불러왔습니다!');
+        } catch (error) {
+          console.error('JSON 파싱 오류:', error);
+          alert('❌ 파일을 읽는 중 오류가 발생했습니다: ' + error.message);
+        }
+      };
+      
+      reader.readAsText(file);
     };
-    reader.readAsDataURL(file);
-  }
-};
+    
+    input.click();
+  };
 
   // 설정 저장
   const handleSaveConfig = async () => {
@@ -393,6 +492,8 @@ const handleThumbnailUpload = (e) => {
       published: savedStories.find(s => s.id === storyId)?.published || false,
       publishedAt: savedStories.find(s => s.id === storyId)?.publishedAt || null,
       thumbnail: imageFiles.thumbnail || thumbnailPreview,
+      backgroundImages: backgroundImages,
+      keywordImages: keywordImageList,
       appSettings,
       title: scenario.title,
       description: scenario.description,
@@ -421,13 +522,11 @@ const handleThumbnailUpload = (e) => {
         threshold: img.threshold,
         name: img.name
       })),
-      backgroundImages: backgroundImages,
-      keywordImages: keywordImageList
     };
 
     try {
       // Firebase에 저장
-      await set(ref(database, `stories/${storyId}`), config);
+      await setDoc(doc(db, 'stories', storyId), config);
       console.log('✅ Firebase 저장 성공:', storyId);
 
       // localStorage에도 백업
@@ -476,8 +575,10 @@ const handleThumbnailUpload = (e) => {
 
     try {
       // Firebase에 발행 상태 업데이트
-      await set(ref(database, `stories/${currentStoryId}/published`), true);
-      await set(ref(database, `stories/${currentStoryId}/publishedAt`), new Date().toISOString());
+      await setDoc(doc(db, 'stories', currentStoryId), {
+        published: true,
+        publishedAt: new Date().toISOString()
+      }, { merge: true });
 
       // localStorage도 업데이트
       const updatedStories = savedStories.map(s => 
@@ -506,8 +607,10 @@ const handleThumbnailUpload = (e) => {
 
     try {
       // Firebase 업데이트
-      await set(ref(database, `stories/${currentStoryId}/published`), false);
-      await set(ref(database, `stories/${currentStoryId}/publishedAt`), null);
+      await setDoc(doc(db, 'stories', currentStoryId), {
+        published: false,
+        publishedAt: null
+      }, { merge: true });
 
       // localStorage 업데이트
       const updatedStories = savedStories.map(s => 
@@ -527,50 +630,49 @@ const handleThumbnailUpload = (e) => {
   };
 
   // 스토리 로드
-const handleLoadStory = (storyId) => {
-  const story = savedStories.find(s => s.id === storyId);
-  if (!story) return;
-  
-  setCurrentStoryId(story.id);
-  setStoryTitle(story.storyTitle);
-  setThumbnailPreview(story.thumbnail || null);
-  setAppSettings(story.appSettings || {
-    primaryColor: '#FF69B4',
-    fontFamily: 'Noto Sans KR',
-    fontSize: 16
-  });
-  setScenario({
-    title: story.title,
-    description: story.description,
-    storyTags: story.storyTags,
-    relationship: story.scenario.relationship,
-    location: story.scenario.location,
-    situation: story.scenario.situation,
-    time: story.scenario.time,
-    narrativePattern: story.scenario.narrativePattern || 'A'
-  });
-  setCharA(story.characterA);
-  setCharB(story.characterB);
-  setImages(story.images);
-  
-  // ⭐ 이 부분 수정 - 배열 형식 보장
-  const bgImages = story.backgroundImages || {};
-  setBackgroundImages({
-    0: Array.isArray(bgImages[0]) ? bgImages[0] : [],
-    20: Array.isArray(bgImages[20]) ? bgImages[20] : [],
-    40: Array.isArray(bgImages[40]) ? bgImages[40] : [],
-    60: Array.isArray(bgImages[60]) ? bgImages[60] : [],
-    80: Array.isArray(bgImages[80]) ? bgImages[80] : []
-  });
-  
-  setProfileImagesA(story.characterA.profileImages || []);
-  setProfileImagesB(story.characterB.profileImages || []);
-  setKeywordImageList(story.keywordImages || []);
-  
-  localStorage.setItem('kind_cat_active_story', storyId);
-  
-  alert(`✅ "${story.storyTitle}" 스토리를 불러왔습니다!`);
-};
+  const handleLoadStory = (storyId) => {
+    const story = savedStories.find(s => s.id === storyId);
+    if (!story) return;
+    
+    setCurrentStoryId(story.id);
+    setStoryTitle(story.storyTitle);
+    setThumbnailPreview(story.thumbnail || null);
+    setAppSettings(story.appSettings || {
+      primaryColor: '#FF69B4',
+      fontFamily: 'Noto Sans KR',
+      fontSize: 16
+    });
+    setScenario({
+      title: story.title,
+      description: story.description,
+      storyTags: story.storyTags,
+      relationship: story.scenario.relationship,
+      location: story.scenario.location,
+      situation: story.scenario.situation,
+      time: story.scenario.time,
+      narrativePattern: story.scenario.narrativePattern || 'A'
+    });
+    setCharA(story.characterA);
+    setCharB(story.characterB);
+    setImages(story.images);
+    
+    const bgImages = story.backgroundImages || {};
+    setBackgroundImages({
+      0: Array.isArray(bgImages[0]) ? bgImages[0] : [],
+      20: Array.isArray(bgImages[20]) ? bgImages[20] : [],
+      40: Array.isArray(bgImages[40]) ? bgImages[40] : [],
+      60: Array.isArray(bgImages[60]) ? bgImages[60] : [],
+      80: Array.isArray(bgImages[80]) ? bgImages[80] : []
+    });
+    
+    setProfileImagesA(story.characterA.profileImages || []);
+    setProfileImagesB(story.characterB.profileImages || []);
+    setKeywordImageList(story.keywordImages || []);
+    
+    localStorage.setItem('kind_cat_active_story', storyId);
+    
+    alert(`✅ "${story.storyTitle}" 스토리를 불러왔습니다!`);
+  };
 
   // 새 스토리 생성
   const handleNewStory = () => {
@@ -590,10 +692,10 @@ const handleLoadStory = (storyId) => {
     if (!window.confirm(`"${story?.storyTitle}" 스토리를 삭제하시겠습니까?`)) {
       return;
     }
-    
+
     try {
       // Firebase에서 삭제
-      await set(ref(database, `stories/${storyId}`), null);
+      await deleteDoc(doc(db, 'stories', storyId));
       
       // localStorage에서도 삭제
       const updatedStories = savedStories.filter(s => s.id !== storyId);
@@ -727,7 +829,7 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
       </div>
 
       <div className="admin-content">
-        {/* ⭐ 저장된 스토리 목록을 맨 위로 */}
+        {/* 저장된 스토리 목록 */}
         {savedStories.length > 0 && (
           <div className="admin-section">
             <h2 className="section-title">💾 저장된 스토리 목록 ({savedStories.length}개)</h2>
@@ -784,6 +886,16 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
                 className="story-title-input"
               />
               {currentStoryId && <span className="story-id-badge">ID: {currentStoryId.slice(0, 8)}</span>}
+            </div>
+
+            {/* 스토리 액션 버튼들 */}
+            <div className="story-actions">
+              <button className="btn-new-story" onClick={handleNewStory}>
+                ➕ 새 스토리 만들기
+              </button>
+              <button className="btn-import-json" onClick={handleImportFromJSON}>
+                📥 JSON에서 가져오기
+              </button>
             </div>
 
             <div className="thumbnail-upload-section">
@@ -1075,12 +1187,6 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
                   <span>비, 눈, 석양, 바다</span>
                 </div>
               </div>
-            </div>
-
-            <div className="story-actions">
-              <button className="btn-new-story" onClick={handleNewStory}>
-                ➕ 새 스토리 만들기
-              </button>
             </div>
           </div>
         </div>
@@ -1492,7 +1598,7 @@ export const SYSTEM_PROMPT = \`당신은 한국 BL 인터랙티브 픽션의 AI�
           </div>
         </div>
 
-        {/* 캐릭터 B (수) - 동일한 구조 */}
+        {/* 캐릭터 B (수) */}
         <div className="admin-section">
           <h2 className="section-title">🔻 수(受) 캐릭터</h2>
           

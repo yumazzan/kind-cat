@@ -1,46 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ref, onValue } from 'firebase/database';
-import { database } from '../config/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import './StoryLibrary.css';
 
 function StoryLibrary() {
   const navigate = useNavigate();
   const [stories, setStories] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
 
   const tags = ['#오피스', '#19금', '#병원', '#학원', '#순정', '#강공', '#연상공', '#집착공'];
 
   useEffect(() => {
-    // Firebase 실시간 리스너
-    const storiesRef = ref(database, 'stories');
+    const storiesRef = collection(db, 'stories');
     
-    const unsubscribe = onValue(storiesRef, (snapshot) => {
-      const data = snapshot.val();
-      console.log('📡 Firebase 데이터:', data);
+    const unsubscribe = onSnapshot(storiesRef, (snapshot) => {
+      console.log('📡 Firestore 데이터 수신');
       
-      if (data) {
-        // 임시 테스트용으로 이렇게 변경
-const storiesArray = Object.values(data)
-  // .filter(story => story.published === true)  // 주석처리
-  .sort((a, b) => new Date(b.publishedAt || b.savedAt) - new Date(a.publishedAt || a.savedAt));
+      if (!snapshot.empty) {
+        const storiesArray = snapshot.docs
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          .filter(story => story.published === true)
+          .sort((a, b) => new Date(b.publishedAt || b.savedAt) - new Date(a.publishedAt || a.savedAt));
 
-console.log('📚 모든 스토리 (필터 없음):', storiesArray);
         console.log('📚 발행된 스토리:', storiesArray);
         setStories(storiesArray);
       } else {
-        console.log('⚠️ Firebase에 데이터 없음');
+        console.log('⚠️ Firestore에 데이터 없음');
         setStories([]);
       }
-      setLoading(false);
     }, (error) => {
-      console.error('❌ Firebase 읽기 오류:', error);
-      setLoading(false);
+      console.error('❌ Firestore 읽기 오류:', error);
     });
 
-    // 컴포넌트 언마운트 시 리스너 해제
     return () => unsubscribe();
   }, []);
 
@@ -63,17 +59,6 @@ console.log('📚 모든 스토리 (필터 없음):', storiesArray);
     );
   };
 
-  if (loading) {
-    return (
-      <div className="story-library">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>스토리를 불러오는 중...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="story-library">
       <div className="library-header">
@@ -87,7 +72,6 @@ console.log('📚 모든 스토리 (필터 없음):', storiesArray);
             alt="CAT" 
             className="cat-icon"
             onError={(e) => {
-              console.error('Cat icon failed to load');
               e.target.style.display = 'none';
             }}
           />
@@ -96,12 +80,11 @@ console.log('📚 모든 스토리 (필터 없음):', storiesArray);
             alt="KIND CAT" 
             className="kindcat-typo"
             onError={(e) => {
-              console.error('Kindcat typo failed to load');
               e.target.style.display = 'none';
             }}
           />
         </div>
-        <p className="tagline">BL Interactive Fiction</p>
+        <p className="tagline"></p>
       </div>
 
       <div className="search-section">
@@ -134,14 +117,14 @@ console.log('📚 모든 스토리 (필터 없음):', storiesArray);
               key={story.id} 
               className="story-card"
             >
-              {story.thumbnail && (
+              {story.thumbnail && story.thumbnail.startsWith('/kind-cat/') && (
                 <div className="story-thumbnail-container">
                   <img 
-                    src={`${process.env.PUBLIC_URL}${story.thumbnail}`}
+                    src={story.thumbnail}
                     alt={story.title || story.storyTitle}
                     className="story-thumbnail"
+                    loading="lazy"
                     onError={(e) => {
-                      console.error('Thumbnail failed to load:', story.thumbnail);
                       e.target.style.display = 'none';
                     }}
                   />
