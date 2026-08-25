@@ -1,11 +1,11 @@
 {
   "files": {
-    "main.css": "/kind-cat/static/css/main.21792bd4.css",
+    "main.css": "/kind-cat/static/css/main.ec44ecfc.css",
     "main.js": "/kind-cat/static/js/main.a54da0cd.js",
     "index.html": "/kind-cat/index.html"
   },
   "entrypoints": [
-    "static/css/main.21792bd4.css",
+    "static/css/main.ec44ecfc.css",
     "static/js/main.a54da0cd.js"
   ]
 }
