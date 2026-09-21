@@ -1,6 +1,15 @@
 /**
  * BL 인터랙티브 픽션 게임 상태 관리
- * 호감도, 흥분도, 이벤트 추적
+ * 흥분도, 관계 마일스톤, 이벤트 추적
+ *
+ * 2026-09: 호감도(affectionGong/affectionSu) 숫자 점수 시스템을 폐지했다.
+ * 이유: (1) 엔딩 시스템이 전적으로 이 점수에 기댔는데 실제로 쓰이는 엔딩이
+ * 없었고, (2) 점수가 올라가도 캐릭터의 스탠스/대사/행동이 실제로 달라지지
+ * 않는 게 가장 큰 문제였다 - 매 턴 추상적인 숫자를 프롬프트에 다시 설명하는
+ * 방식이 LLM에게 잘 들러붙지 않았던 것으로 보인다. 대신 "관계 마일스톤"
+ * (통성명함, 사귀기로 함 등 실제로 일어난 사건)을 하나의 정수 인덱스로 누적
+ * 추적하고, 그 마일스톤이 호칭 시스템과 태도 변화 규칙에 그대로 쓰인다 -
+ * Promptbuilder.js의 getCallingSystem/getRelationshipRules 참고.
  */
 
 // ============================================
@@ -8,9 +17,8 @@
 // ============================================
 
 export const INITIAL_GAME_STATE = {
-  affectionGong: 0,
-  affectionSu: 0,
   excitement: 0,
+  relationshipMilestoneIndex: 0,
   currentTurn: 1,
   triggeredKeywords: [],
   triggeredEvents: [],
@@ -25,34 +33,17 @@ export const INITIAL_GAME_STATE = {
 };
 
 // ============================================
-// 호감도 업데이트
+// 흥분도 업데이트
 // ============================================
 
-export function updateAffection(currentValue, change, min = 0, max = 100) {
+// 0~100 범위로 값을 자르는 공용 헬퍼 (흥분도 등에 사용)
+function clampScore(currentValue, change, min = 0, max = 100) {
   const newValue = currentValue + change;
   return Math.max(min, Math.min(max, newValue));
 }
 
-export function updateAffectionGong(state, change) {
-  return {
-    ...state,
-    affectionGong: updateAffection(state.affectionGong, change)
-  };
-}
-
-export function updateAffectionSu(state, change) {
-  return {
-    ...state,
-    affectionSu: updateAffection(state.affectionSu, change)
-  };
-}
-
-// ============================================
-// 흥분도 업데이트
-// ============================================
-
 export function updateExcitement(state, change) {
-  const newExcitement = updateAffection(state.excitement, change, 0, 100);
+  const newExcitement = clampScore(state.excitement, change, 0, 100);
   return {
     ...state,
     excitement: newExcitement
@@ -69,131 +60,26 @@ export function getExcitementLevel(excitement) {
 }
 
 // ============================================
-// 관계 단계
+// 관계 마일스톤 (호감도 점수를 대체)
 // ============================================
 
-export function getRelationshipStage(avgAffection) {
-  if (avgAffection <= 20) {
-    return {
-      stage: 1,
-      name: '완전한 타인',
-      allowedActions: ['대화'],
-      forbiddenActions: ['모든 신체 접촉', '사적인 질문'],
-      skinshipPenalty: -8
-    };
-  }
-  if (avgAffection <= 40) {
-    return {
-      stage: 2,
-      name: '경계하는 지인',
-      allowedActions: ['짧은 대화', '우연한 스킨십'],
-      forbiddenActions: ['의도적 터치', '개인적 질문'],
-      skinshipPenalty: -5
-    };
-  }
-  if (avgAffection <= 60) {
-    return {
-      stage: 3,
-      name: '은근한 관심',
-      allowedActions: ['어깨 터치', '짧은 포옹', '가벼운 터치', '개인적 대화'],
-      forbiddenActions: ['키스', '고백'],
-      skinshipPenalty: -7
-    };
-  }
-  if (avgAffection <= 80) {
-    return {
-      stage: 4,
-      name: '인정하기 시작',
-      allowedActions: ['손잡기', '이마 키스', '안아주기', '팔짱', '머리 쓰다듬기'],
-      forbiddenActions: ['격렬한 스킨십'],
-      skinshipPenalty: 0
-    };
-  }
-  if (avgAffection <= 95) {
-    return {
-      stage: 5,
-      name: '솔직한 애정',
-      allowedActions: ['키스', '깊은 스킨십', '애정 표현'],
-      forbiddenActions: [],
-      skinshipPenalty: 0
-    };
-  }
+// 마일스톤 인덱스는 절대 뒤로 가지 않는다 (관계가 깊어지는 순서를 나타내는
+// 하나의 정수 포인터) - AI가 실수로 더 낮은 인덱스를 보고해도 Math.max로 방어.
+export function advanceMilestone(state, newIndex) {
+  if (typeof newIndex !== 'number' || Number.isNaN(newIndex)) return state;
   return {
-    stage: 6,
-    name: '완전한 신뢰',
-    allowedActions: ['모든 친밀 행동', '고수위 씬'],
-    forbiddenActions: [],
-    skinshipPenalty: 0
+    ...state,
+    relationshipMilestoneIndex: Math.max(state.relationshipMilestoneIndex || 0, newIndex)
   };
 }
 
-// ============================================
-// 페이싱 위반 체크
-// ============================================
-
-const ACTION_REQUIREMENTS = {
-  // 스킨십 단계별 요구 호감도
-  'hand_hold': 40,       // 손잡기
-  'shoulder_touch': 30,  // 어깨 터치
-  'hug': 50,             // 포옹
-  'forehead_kiss': 60,   // 이마 키스
-  'kiss': 70,            // 키스
-  'deep_kiss': 75,       // 깊은 키스
-  'confession': 65,      // 고백
-  'adult_light': 80,     // 가벼운 성적 접촉
-  'adult_heavy': 90,     // 깊은 성적 접촉
-  'adult_full': 95       // 고수위 씬
-};
-
-export function checkPacingViolation(action, state) {
-  const { affectionGong, affectionSu } = state;
-  const avgAffection = Math.floor((affectionGong + affectionSu) / 2);
-  
-  const required = ACTION_REQUIREMENTS[action];
-  
-  if (required === undefined) {
-    // 정의되지 않은 행동은 허용
-    return { violation: false };
-  }
-  
-  if (avgAffection < required) {
-    return {
-      violation: true,
-      action,
-      required,
-      current: avgAffection,
-      message: `이 행동은 호감도 ${required}점 이상 필요합니다. (현재: ${avgAffection}점)`,
-      penaltyRange: [-5, -10]
-    };
-  }
-  
-  return { violation: false };
-}
-
-// 행동 키워드로 액션 타입 추출
-export function detectActionType(userInput) {
-  const input = userInput.toLowerCase();
-  
-  const actionKeywords = {
-    'hand_hold': ['손잡', '손을 잡', '손 잡'],
-    'shoulder_touch': ['어깨', '팔 터치', '팔을 터치'],
-    'hug': ['안아', '포옹', '껴안', '안기'],
-    'forehead_kiss': ['이마 키스', '이마에 키스', '이마에 입맞'],
-    'kiss': ['키스', '입맞춤', '입술'],
-    'deep_kiss': ['깊은 키스', '혀를', '딥키스'],
-    'confession': ['고백', '좋아해', '사랑해'],
-    'adult_light': ['만지', '쓰다듬', '어루만'],
-    'adult_heavy': ['벗기', '옷을', '애무'],
-    'adult_full': ['삽입', '박아', '넣어']
-  };
-
-  for (const [action, keywords] of Object.entries(actionKeywords)) {
-    if (keywords.some(kw => input.includes(kw))) {
-      return action;
-    }
-  }
-  
-  return null;
+// AI가 응답에 적어 보낸 마일스톤 문구(new_milestone)를, 이 스토리의 마일스톤
+// 후보 목록(candidates, Promptbuilder.getMilestoneCandidates 결과)에서 찾아
+// 그 위치(1부터 시작하는 인덱스)로 변환한다. 못 찾으면 null.
+export function resolveMilestoneIndex(newMilestoneText, candidates) {
+  if (!newMilestoneText || !Array.isArray(candidates)) return null;
+  const idx = candidates.findIndex((c) => c === newMilestoneText);
+  return idx === -1 ? null : idx + 1;
 }
 
 // ============================================
@@ -338,33 +224,19 @@ export function addToHistory(state, entry) {
 }
 
 // ============================================
-// 분기점 체크
+// 마일스톤 분기점 알림
 // ============================================
 
-export function checkBranchPoint(prevAvg, currentAvg) {
-  const branchPoints = [25, 50, 75, 90];
-  
-  for (const point of branchPoints) {
-    if (prevAvg < point && currentAvg >= point) {
-      return {
-        reached: true,
-        point,
-        message: getBranchMessage(point)
-      };
-    }
+// 마일스톤 인덱스가 실제로 전진했을 때만 분기 알림을 띄운다 (예전엔 호감도
+// 25/50/75/90% 퍼센트 구간을 넘을 때였지만, 이제는 실제 사건 단위로 트리거됨)
+export function checkBranchPoint(prevIndex, newIndex, milestoneText) {
+  if (newIndex > prevIndex) {
+    return {
+      reached: true,
+      message: `💫 관계가 새로운 단계로 접어들었습니다${milestoneText ? `: ${milestoneText}` : ''}`
+    };
   }
-  
   return { reached: false };
-}
-
-function getBranchMessage(point) {
-  const messages = {
-    25: '💫 첫 번째 분기점 도달! 관계가 움직이기 시작합니다.',
-    50: '💕 두 번째 분기점! 서로를 의식하기 시작합니다.',
-    75: '❤️ 세 번째 분기점! 감정이 깊어지고 있습니다.',
-    90: '🔥 최종 분기점! 엔딩이 결정됩니다.'
-  };
-  return messages[point];
 }
 
 // ============================================
@@ -372,31 +244,14 @@ function getBranchMessage(point) {
 // ============================================
 
 export function getStateSummary(state) {
-  const avgAffection = Math.floor((state.affectionGong + state.affectionSu) / 2);
-  const relationshipStage = getRelationshipStage(avgAffection);
   const excitementLevel = getExcitementLevel(state.excitement);
-  
-  let endingPath = '미정';
-  if (avgAffection >= 90 && state.badChoiceCount <= 1) {
-    endingPath = '트루 엔딩 루트';
-  } else if (avgAffection >= 70) {
-    endingPath = '굿/노멀 엔딩 루트';
-  } else if (avgAffection >= 50) {
-    endingPath = '노멀 엔딩 루트';
-  } else if (avgAffection < 50 || state.badChoiceCount >= 4) {
-    endingPath = '배드 엔딩 위험';
-  }
 
   return {
     turn: state.currentTurn,
-    affectionGong: state.affectionGong,
-    affectionSu: state.affectionSu,
-    avgAffection,
     excitement: state.excitement,
     excitementLevel,
-    relationshipStage,
+    relationshipMilestoneIndex: state.relationshipMilestoneIndex,
     badChoiceCount: state.badChoiceCount,
-    endingPath,
     keywordsCount: state.triggeredKeywords.length,
     eventsCount: state.triggeredEvents.length
   };
@@ -406,56 +261,52 @@ export function getStateSummary(state) {
 // 전체 상태 업데이트 (한 번에)
 // ============================================
 
-export function applyResponseToState(state, parsedResponse, endings) {
+// milestoneCandidates: Promptbuilder.getMilestoneCandidates(story)의 결과 -
+// AI가 돌려준 new_milestone 문구를 인덱스로 바꾸는 데 필요하다
+export function applyResponseToState(state, parsedResponse, milestoneCandidates = []) {
   let newState = { ...state };
-  
-  // 1. 호감도 업데이트
+
+  // 1. 흥분도 업데이트
   if (parsedResponse.scores) {
-    newState.affectionGong = updateAffection(
-      newState.affectionGong, 
-      parsedResponse.scores.affectionGongChange
-    );
-    newState.affectionSu = updateAffection(
-      newState.affectionSu, 
-      parsedResponse.scores.affectionSuChange
-    );
-    newState.excitement = updateAffection(
-      newState.excitement, 
-      parsedResponse.scores.excitementChange
-    );
+    newState = updateExcitement(newState, parsedResponse.scores.excitementChange);
   }
-  
-  // 2. 키워드 추적
+
+  // 2. 관계 마일스톤 갱신
+  const resolvedIndex = resolveMilestoneIndex(parsedResponse.newMilestone, milestoneCandidates);
+  if (resolvedIndex !== null) {
+    newState = advanceMilestone(newState, resolvedIndex);
+  }
+
+  // 3. 키워드 추적
   if (parsedResponse.triggeredKeywords && parsedResponse.triggeredKeywords.length > 0) {
     newState = trackKeywords(newState, parsedResponse.triggeredKeywords, 'ai');
   }
-  
-  // 3. 씬 업데이트
+
+  // 4. 씬 업데이트
   if (parsedResponse.meta) {
     newState = updateScene(newState, parsedResponse.meta);
   }
-  
-  // 4. 턴 증가
+
+  // 5. 턴 증가
   newState = incrementTurn(newState);
-  
-  // 5. 히스토리 추가
+
+  // 6. 히스토리 추가
   newState = addToHistory(newState, {
     type: 'ai_response',
     scores: parsedResponse.scores,
+    milestone: parsedResponse.newMilestone,
     keywords: parsedResponse.triggeredKeywords
   });
-  
+
   return newState;
 }
 
 export default {
   INITIAL_GAME_STATE,
-  updateAffection,
   updateExcitement,
   getExcitementLevel,
-  getRelationshipStage,
-  checkPacingViolation,
-  detectActionType,
+  advanceMilestone,
+  resolveMilestoneIndex,
   trackKeyword,
   trackKeywords,
   extractEndingKeywords,

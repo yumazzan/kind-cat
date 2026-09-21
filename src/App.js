@@ -5,19 +5,22 @@ import StoryFlow from './components/StoryFlow';
 import ApiKeyScreen from './components/ApiKeyScreen';
 import ChatInterface from './components/ChatInterface';
 import AdminPage from './components/AdminPage';
+import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<StoryLibrary />} />
-        <Route path="/story/:storyId" element={<StoryFlow />} />
-        <Route path="/apikey/:storyId" element={<ApiKeyScreen />} />
-        <Route path="/chat/:storyId" element={<ChatInterface />} />
-        <Route path="/admin" element={<AdminPage />} />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          <Route path="/" element={<StoryLibrary />} />
+          <Route path="/story/:storyId" element={<StoryFlow />} />
+          <Route path="/apikey/:storyId" element={<ApiKeyScreen />} />
+          <Route path="/chat/:storyId" element={<ChatInterface />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

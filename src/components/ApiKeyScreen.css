@@ -1,180 +1,225 @@
+/* ============================================
+   ApiKeyScreen.css - 블랙 테마
+   ============================================ */
+
 .apikey-screen {
   min-height: 100vh;
-  background: #1a1a1a; /* ⭐ 배경색 확실히 */
+  background: #0f0f0f;
   color: #fff;
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative; /* ⭐ 추가 */
-  z-index: 1; /* ⭐ 추가 */
-}
-
-.apikey-header {
-  margin-bottom: 40px;
-}
-
-.logo-section {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  transition: transform 0.3s;
+  padding: 20px;
 }
 
-.logo-section:hover {
-  transform: scale(1.05);
+.apikey-container {
+  width: 100%;
+  max-width: 400px;
 }
 
-.cat-icon {
+.apikey-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.apikey-header .cat-icon {
   width: 60px;
   height: 60px;
-  object-fit: contain;
-  animation: float 3s ease-in-out infinite;
+  margin-bottom: 16px;
 }
 
-.kindcat-typo {
-  height: 45px;
-  object-fit: contain;
+.apikey-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px 0;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+.apikey-header p {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
 }
 
+/* 스토리 미리보기 */
 .story-preview {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
   text-align: center;
-  max-width: 600px;
-  margin-bottom: 40px;
 }
 
-.story-preview h2 {
-  font-size: 28px;
-  color: #C9395A;
-  margin-bottom: 15px;
+.story-preview h3 {
+  font-size: 16px;
+  color: #E8749B;
+  margin: 0 0 8px 0;
 }
 
 .story-preview p {
-  font-size: 16px;
+  font-size: 13px;
   color: #aaa;
-  line-height: 1.8;
-  white-space: pre-line;
+  margin: 0;
+  line-height: 1.5;
 }
 
+/* 폼 */
 .apikey-form {
-  width: 100%;
-  max-width: 500px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  background: #2a2a2a;
-  padding: 40px;
+  background: rgba(201, 57, 90, 0.1);
+  border: 1px solid rgba(201, 57, 90, 0.3);
   border-radius: 16px;
-  border: 2px solid #C9395A;
+  padding: 24px;
+  margin-bottom: 20px;
 }
 
-.apikey-form label {
-  font-size: 18px;
-  color: #E8749B;
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
   font-weight: 600;
-  text-align: center;
+  color: #E8749B;
+  margin-bottom: 8px;
 }
 
-.apikey-input {
-  padding: 16px 20px;
+.input-group input {
+  width: 100%;
+  padding: 14px 16px;
   background: #1a1a1a;
-  border: 2px solid #C9395A;
+  border: 2px solid rgba(255,255,255,0.1);
   border-radius: 10px;
   color: #fff;
-  font-size: 16px;
-  outline: none;
-  transition: all 0.3s;
-}
-
-.apikey-input:focus {
-  border-color: #E8749B;
-  box-shadow: 0 0 20px rgba(201, 57, 90, 0.3);
-}
-
-.btn-start {
-  padding: 18px;
-  background: linear-gradient(135deg, #C9395A, #E8749B);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.btn-start:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 30px rgba(201, 57, 90, 0.5);
-}
-
-.api-link {
-  text-align: center;
-  color: #2196F3;
-  text-decoration: none;
   font-size: 15px;
-  transition: color 0.3s;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
 }
 
-.api-link:hover {
-  color: #64B5F6;
+.input-group input:focus {
+  border-color: #C9395A;
+}
+
+.input-group input::placeholder {
+  color: #666;
+}
+
+/* 도움말 */
+.help-text {
+  margin-bottom: 20px;
+}
+
+.help-text p {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 8px 0;
+}
+
+.help-text a {
+  color: #E8749B;
+  text-decoration: none;
+}
+
+.help-text a:hover {
   text-decoration: underline;
 }
 
-.api-info {
-  max-width: 600px;
-  margin-top: 40px;
-  padding: 30px;
-  background: rgba(33, 150, 243, 0.1);
-  border: 1px solid #2196F3;
-  border-radius: 12px;
+/* 버튼 그룹 */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.api-info h3 {
-  color: #64B5F6;
-  font-size: 18px;
-  margin-bottom: 15px;
+.btn-primary {
+  width: 100%;
+  padding: 16px;
+  background: #E8405C;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.api-info p {
-  color: #ddd;
+.btn-primary:hover {
+  background: #d93a54;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
   font-size: 14px;
-  line-height: 1.8;
-  margin: 10px 0;
+  font-weight: 600;
+  color: #aaa;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.loading {
-  text-align: center;
-  padding: 100px 20px;
-  font-size: 18px;
+.btn-secondary:hover {
+  border-color: #C9395A;
+  color: #E8749B;
+}
+
+/* 뒤로가기 버튼 */
+.apikey-screen .btn-back {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  border: none;
+  font-size: 14px;
   color: #888;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.2s;
 }
 
-@media (max-width: 768px) {
+.apikey-screen .btn-back:hover {
+  color: #E8749B;
+}
+
+/* 로딩 */
+.apikey-screen .loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 16px;
+}
+
+.apikey-screen .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: #C9395A;
+  border-radius: 50%;
+  animation: apikey-spin 1s linear infinite;
+}
+
+@keyframes apikey-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .apikey-screen {
+    padding: 16px;
+  }
+  
   .apikey-form {
-    padding: 30px 20px;
+    padding: 20px;
   }
-
-  .cat-icon {
-    width: 50px;
-    height: 50px;
-  }
-
-  .kindcat-typo {
-    height: 40px;
-  }
-
-  .story-preview h2 {
-    font-size: 24px;
+  
+  .apikey-header h1 {
+    font-size: 22px;
   }
 }
