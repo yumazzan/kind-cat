@@ -1,855 +1,644 @@
-/* StoryFlow 전체 레이아웃 */
-.story-flow {
+/* ============================================
+   StoryFlow.css - Ridi Style (Tab + Large Card)
+   ============================================ */
+
+.story-flow-ridi {
   min-height: 100vh;
-  background: #1a1a1a;
+  background: #0f0f0f !important;
   color: #fff;
-  padding-bottom: 40px;
+  padding-bottom: 100px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
-/* 헤더 */
-.story-header {
-  background: #2a2a2a;
-  padding: 25px 40px; /* ⭐ 패딩 증가 */
-  border-bottom: 2px solid #C9395A;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+.story-flow-ridi * {
+  box-sizing: border-box;
 }
 
-.btn-back {
-  padding: 12px 24px;
-  background: #444;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-weight: 600;
-}
-
-.btn-back:hover {
-  background: #666;
-  transform: translateX(-3px);
-}
-
-.header-logo {
-  cursor: pointer;
-  transition: transform 0.3s;
-  display: flex; /* ⭐ 추가 */
-  align-items: center; /* ⭐ 추가 */
-  gap: 15px; /* ⭐ 추가 */
-}
-
-.header-logo:hover {
-  transform: scale(1.05);
-}
-
-.header-cat-icon {
-  width: 45px;
-  height: 45px;
-  object-fit: contain;
-}
-
-.header-kindcat-typo {
-  height: 35px; /* ⭐ 추가 */
-  object-fit: contain; /* ⭐ 추가 */
-}
-
-.header-spacer {
-  width: 100px;
-}
-
-/* 썸네일 섹션 */
-.story-thumbnail-section {
-  width: 100%;
-  max-width: 900px;
-  margin: 50px auto 0; /* ⭐ 여백 증가 */
-  padding: 0 40px; /* ⭐ 패딩 증가 */
-}
-
-.story-detail-thumbnail {
-  width: 100%;
-  max-height: 600px;
-  object-fit: cover;
-  border-radius: 16px;
-  border: 3px solid #C9395A;
-  box-shadow: 0 8px 30px rgba(201, 57, 90, 0.3);
-}
-
-/* 스토리 정보 섹션 */
-.story-info-section {
-  max-width: 900px;
-  margin: 50px auto; /* ⭐ 여백 증가 */
-  padding: 0 40px; /* ⭐ 패딩 증가 */
-  text-align: left;
-}
-
-.story-info-section h1 {
-  font-size: 36px;
-  color: #C9395A;
-  margin: 0 0 20px 0;
-  line-height: 1.3;
-}
-
-.story-description {
-  font-size: 18px;
-  color: #ddd;
-  line-height: 1.8;
-  margin-bottom: 30px;
-  white-space: pre-line;
-}
-
-/* 태그 표시 */
-.story-tags-display {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.tag {
-  padding: 10px 20px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  border: 2px solid;
-  transition: all 0.3s;
-}
-
-.genre-tag {
-  background: rgba(201, 57, 90, 0.15);
-  border-color: #C9395A;
-  color: #E8749B;
-}
-
-.mood-tag {
-  background: rgba(76, 175, 80, 0.15);
-  border-color: #4CAF50;
-  color: #81C784;
-}
-
-.situation-tag {
-  background: rgba(33, 150, 243, 0.15);
-  border-color: #2196F3;
-  color: #64B5F6;
-}
-
-/* 캐릭터 탭 */
-.character-tabs {
-  max-width: 900px;
-  margin: 50px auto 0; /* ⭐ 여백 증가 */
-  padding: 0 40px; /* ⭐ 패딩 증가 */
-  display: flex;
-  gap: 20px; /* ⭐ 간격 증가 */
-}
-
-.tab {
-  flex: 1;
-  padding: 18px;
-  background: #2a2a2a;
-  border: 2px solid #444;
-  border-radius: 12px;
-  color: #aaa;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.tab:hover {
-  border-color: #C9395A;
-  color: #E8749B;
-}
-
-.tab.active {
-  background: linear-gradient(135deg, #C9395A, #E8749B);
-  border-color: #E8749B;
-  color: white;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(201, 57, 90, 0.4);
-}
-
-/* 캐릭터 상세 */
-.character-detail {
-  max-width: 900px;
-  margin: 40px auto 0; /* ⭐ 여백 증가 */
-  padding: 0 40px; /* ⭐ 패딩 증가 */
-}
-
-/* ⭐ 프로필 이미지 갤러리 (좌우 스크롤) */
-.profile-images-gallery {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 40px 0; /* ⭐ 패딩 증가 */
-  margin-bottom: 40px; /* ⭐ 여백 증가 */
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth; /* ⭐ 부드러운 스크롤 */
-}
-
-.profile-images-gallery::-webkit-scrollbar {
-  height: 10px; /* ⭐ 스크롤바 크기 증가 */
-}
-
-.profile-images-gallery::-webkit-scrollbar-track {
-  background: #2a2a2a;
-  border-radius: 10px;
-  margin: 0 20px; /* ⭐ 양쪽 여백 */
-}
-
-.profile-images-gallery::-webkit-scrollbar-thumb {
-  background: #C9395A;
-  border-radius: 10px;
-}
-
-.profile-images-gallery::-webkit-scrollbar-thumb:hover {
-  background: #E8749B;
-}
-
-.profile-image {
-  min-width: 300px;
-  max-width: 300px;
-  height: 400px;
-  object-fit: cover;
-  border-radius: 16px;
-  border: none; /* ⭐ 테두리 제거 */
-  scroll-snap-align: center;
-  transition: all 0.3s;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  cursor: grab; /* ⭐ 드래그 커서 */
-}
-
-.profile-image:active {
-  cursor: grabbing; /* ⭐ 드래그 중 커서 */
-}
-
-.profile-image:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 30px rgba(201, 57, 90, 0.5);
-}
-
-/* 정보 섹션 */
-.info-section {
-  background: #2a2a2a;
-  padding: 35px; /* ⭐ 패딩 증가 */
-  border-radius: 16px;
-  border: 2px solid #444;
-  margin-bottom: 30px; /* ⭐ 여백 증가 */
-}
-
-.info-section h3 {
-  font-size: 22px;
-  color: #E8749B;
-  margin: 0 0 20px 0;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #444;
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.info-item {
-  background: #1a1a1a;
-  padding: 15px 20px;
-  border-radius: 10px;
-  border: 1px solid #444;
-  line-height: 1.6;
-}
-
-.info-item.full-width {
-  grid-column: 1/-1;
-}
-
-.info-item strong {
-  color: #C9395A;
-  display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* 성적 디테일 섹션 */
-.sensitive-section {
-  border: 2px solid #ff5722;
-  background: rgba(255, 87, 34, 0.05);
-}
-
-.sensitive-section h3 {
-  color: #ff8a65;
-  border-bottom-color: #ff5722;
-}
-
-/* 캐릭터 태그 */
-.character-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.character-tag {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #C9395A, #E8749B);
-  border-radius: 20px;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  border: 2px solid #E8749B;
-  transition: all 0.3s;
-}
-
-.character-tag:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(201, 57, 90, 0.4);
-}
-
-/* 행동 리스트 */
-.action-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* 로딩 화면 */
+.story-flow-ridi .loading-screen {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 16px;
 }
 
-.action-list li {
-  background: #1a1a1a;
-  padding: 15px 20px;
-  border-radius: 10px;
-  border-left: 4px solid #C9395A;
-  color: #ddd;
-  font-size: 15px;
-  line-height: 1.6;
+.story-flow-ridi .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: #F33B3E;
+  border-radius: 50%;
+  animation: ridi-spin 1s linear infinite;
 }
 
-/* 시작 버튼 */
-.start-button-container {
-  max-width: 900px;
-  margin: 50px auto 0;
-  padding: 0 30px;
-}
-
-.btn-start-story {
-  width: 100%;
-  padding: 22px;
-  background: linear-gradient(135deg, #C9395A, #E8749B);
-  color: white;
-  border: none;
-  border-radius: 16px;
-  font-size: 20px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 6px 25px rgba(201, 57, 90, 0.4);
-}
-
-.btn-start-story:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 40px rgba(201, 57, 90, 0.6);
-}
-
-.btn-start-story:active {
-  transform: translateY(-2px);
-}
-
-/* 로딩 */
-.loading {
-  text-align: center;
-  padding: 100px 20px;
-  font-size: 18px;
-  color: #888;
-}
-
-/* ⭐ 모바일 최적화 */
-@media (max-width: 768px) {
-  .story-header {
-    padding: 20px 25px; /* ⭐ 패딩 증가 */
-  }
-
-  .header-cat-icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .header-kindcat-typo {
-    height: 30px; /* ⭐ 추가 */
-  }
-
-  .btn-back {
-    padding: 10px 18px;
-    font-size: 14px;
-  }
-
-  .header-spacer {
-    width: 60px;
-  }
-
-  .story-thumbnail-section {
-    padding: 0 25px; /* ⭐ 패딩 증가 */
-    margin-top: 30px; /* ⭐ 여백 증가 */
-  }
-
-  .story-detail-thumbnail {
-    max-height: 400px;
-    border-radius: 12px;
-  }
-
-  .story-info-section {
-    padding: 0 25px; /* ⭐ 패딩 증가 */
-    margin: 35px auto; /* ⭐ 여백 증가 */
-  }
-
-  .story-info-section h1 {
-    font-size: 28px;
-    margin-bottom: 15px;
-  }
-
-  .story-description {
-    font-size: 16px;
-    line-height: 1.7;
-    margin-bottom: 20px;
-  }
-
-  .story-tags-display {
-    gap: 8px;
-  }
-
-  .tag {
-    padding: 8px 16px;
-    font-size: 13px;
-  }
-
-  .character-tabs {
-    padding: 0 25px; /* ⭐ 패딩 증가 */
-    margin-top: 35px; /* ⭐ 여백 증가 */
-    flex-direction: column;
-  }
-
-  .tab {
-    padding: 16px;
-    font-size: 15px;
-  }
-
-  .character-detail {
-    padding: 0 25px; /* ⭐ 패딩 증가 */
-    margin-top: 25px; /* ⭐ 여백 증가 */
-  }
-
-  /* ⭐ 모바일 프로필 갤러리 */
-  .profile-images-gallery {
-    padding: 25px 0; /* ⭐ 패딩 증가 */
-    gap: 15px;
-    margin-bottom: 25px; /* ⭐ 여백 증가 */
-  }
-
-  .profile-image {
-    min-width: 250px;
-    max-width: 250px;
-    height: 350px;
-    border-radius: 12px;
-    border: none; /* ⭐ 테두리 제거 */
-  }
-
-  .info-section {
-    padding: 25px; /* ⭐ 패딩 증가 */
-    margin-bottom: 25px; /* ⭐ 여백 증가 */
-    border-radius: 12px;
-  }
-
-  .info-section h3 {
-    font-size: 18px;
-    margin-bottom: 15px;
-    padding-bottom: 12px;
-  }
-
-  .info-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-
-  .info-item {
-    padding: 12px 16px;
-  }
-
-  .info-item strong {
-    font-size: 13px;
-    margin-bottom: 6px;
-  }
-
-  .character-tags {
-    gap: 8px;
-  }
-
-  .character-tag {
-    padding: 8px 16px;
-    font-size: 13px;
-  }
-
-  .action-list {
-    gap: 10px;
-  }
-
-  .action-list li {
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-
-  .start-button-container {
-    padding: 0 25px; /* ⭐ 패딩 증가 */
-    margin-top: 45px; /* ⭐ 여백 증가 */
-  }
-
-  .btn-start-story {
-    padding: 18px;
-    font-size: 18px;
-    border-radius: 12px;
-  }
-}
-
-/* 작은 모바일 (iPhone SE) */
-@media (max-width: 375px) {
-  .story-info-section h1 {
-    font-size: 24px;
-  }
-
-  .story-description {
-    font-size: 15px;
-  }
-
-  .profile-image {
-    min-width: 220px;
-    max-width: 220px;
-    height: 300px;
-  }
-
-  .info-section {
-    padding: 16px;
-  }
-
-  .btn-start-story {
-    font-size: 16px;
-    padding: 16px;
-  }
-}
-
-/* 큰 화면 */
-@media (min-width: 1200px) {
-  .story-info-section h1 {
-    font-size: 42px;
-  }
-
-  .story-description {
-    font-size: 19px;
-  }
-
-  .profile-image {
-    min-width: 350px;
-    max-width: 350px;
-    height: 450px;
-  }
-
-  .info-section h3 {
-    font-size: 24px;
-  }
+@keyframes ridi-spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ============================================
-   Tinder 스타일 캐릭터 카드 CSS
-   기존 StoryFlow.css에 추가하세요
+   Hero Section
    ============================================ */
-
-/* 카드 컨테이너 */
-.character-card-container {
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-/* Tinder 카드 */
-.tinder-card {
-  width: 100%;
-  max-width: 380px;
-  border-radius: 16px;
-  overflow: hidden;
-  background: #1a1a2e;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-/* 이미지 영역 */
-.card-image-area {
+.story-flow-ridi .hero-section {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
-  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+  height: 45vh;
+  min-height: 280px;
+  max-height: 400px;
   overflow: hidden;
 }
 
-/* 메인 이미지 */
-.card-main-image {
+.story-flow-ridi .hero-image-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.story-flow-ridi .hero-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center top;
 }
 
-/* 이미지 없을 때 */
-.card-no-image {
+.story-flow-ridi .hero-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1a2e, #2d2d44);
+}
+
+.story-flow-ridi .hero-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 15, 15, 0.5) 0%,
+    rgba(15, 15, 15, 0) 25%,
+    rgba(15, 15, 15, 0) 50%,
+    rgba(15, 15, 15, 0.7) 75%,
+    rgba(15, 15, 15, 1) 100%
+  );
+  pointer-events: none;
+}
+
+/* 상단 네비게이션 */
+.story-flow-ridi .hero-nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  z-index: 10;
+}
+
+.story-flow-ridi .nav-back {
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.story-flow-ridi .nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  padding: 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.story-flow-ridi .nav-spacer {
+  width: 44px;
+  flex-shrink: 0;
+}
+
+.story-flow-ridi .hero-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 20px;
+  z-index: 5;
+}
+
+.story-flow-ridi .hero-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.3;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+/* ============================================
+   Tags Section
+   ============================================ */
+.story-flow-ridi .tags-section {
+  padding: 16px 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.story-flow-ridi .tags-section::-webkit-scrollbar {
+  display: none;
+}
+
+.story-flow-ridi .tags-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.story-flow-ridi .story-tag {
+  display: inline-block;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 20px;
+  font-size: 13px;
+  color: #ccc;
+  white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ============================================
+   Section 공통
+   ============================================ */
+.story-flow-ridi .section {
+  padding: 24px 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.story-flow-ridi .section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 설명 영역 */
+.story-flow-ridi .description-content {
+  max-height: 100px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.story-flow-ridi .description-content.expanded {
+  max-height: 2000px;
+}
+
+.story-flow-ridi .description-content p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #ddd;
+  margin: 0 0 12px 0;
+  white-space: pre-line;
+}
+
+.story-flow-ridi .situation-text,
+.story-flow-ridi .relation-text {
+  font-size: 14px;
+  color: #aaa;
+}
+
+.story-flow-ridi .btn-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 14px;
+  padding: 8px 0;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+/* ============================================
+   Character Tabs (이름 + 태그)
+   ============================================ */
+.story-flow-ridi .char-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.story-flow-ridi .char-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 12px;
+  background: rgba(255,255,255,0.05);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.story-flow-ridi .char-tab.active {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: transparent;
+}
+
+.story-flow-ridi .char-tab .tab-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.story-flow-ridi .char-tab .tab-tag {
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+  padding: 2px 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+.story-flow-ridi .char-tab.active .tab-tag {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   Large Character Card (1개)
+   ============================================ */
+.story-flow-ridi .character-card-large {
+  background: #0f0f0f;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* 이미지 영역 */
+.story-flow-ridi .card-image-area {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  background: #0f0f0f;
+  overflow: hidden;
+}
+
+.story-flow-ridi .card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.story-flow-ridi .card-no-image {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #666;
-  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
-}
-
-.card-no-image span {
   font-size: 64px;
-  margin-bottom: 10px;
+  background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
 }
 
-.card-no-image p {
-  font-size: 14px;
-}
-
-/* 이미지 인디케이터 (상단 바) */
-.image-indicators {
+/* 이미지 인디케이터 */
+.story-flow-ridi .card-indicators {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
+  top: 12px;
+  left: 12px;
+  right: 12px;
   display: flex;
   gap: 4px;
   z-index: 10;
 }
 
-.indicator {
+.story-flow-ridi .card-indicator {
   flex: 1;
   height: 3px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255,255,255,0.3);
   border-radius: 2px;
-  transition: background 0.3s;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.indicator.active {
-  background: rgba(255, 255, 255, 0.9);
+.story-flow-ridi .card-indicator.active {
+  background: #fff;
 }
 
-/* 이미지 네비게이션 (좌우 터치 영역) */
-.image-nav {
+/* 좌우 네비게이션 */
+.story-flow-ridi .card-nav {
   position: absolute;
   top: 0;
-  bottom: 100px;
-  width: 50%;
+  bottom: 0;
+  width: 40%;
   z-index: 5;
   cursor: pointer;
 }
 
-.image-nav.prev {
-  left: 0;
-}
+.story-flow-ridi .card-nav.prev { left: 0; }
+.story-flow-ridi .card-nav.next { right: 0; }
 
-.image-nav.next {
-  right: 0;
-}
-
-/* 그라데이션 오버레이 */
-.card-gradient-overlay {
+/* 그라데이션 */
+.story-flow-ridi .card-gradient {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 60%;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(0, 0, 0, 0.6) 40%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  background: linear-gradient(to top, rgba(15,15,15,1) 0%, rgba(15,15,15,0.7) 40%, transparent 100%);
   pointer-events: none;
 }
 
-/* 카드 위 정보 오버레이 */
-.card-overlay-info {
+/* 역할 뱃지 */
+.story-flow-ridi .card-role-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 14px;
+  background: #F33B3E;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  z-index: 10;
+}
+
+.story-flow-ridi .card-role-badge.su {
+  background: #FFD3D4;
+  color: #F33B3E;
+}
+
+/* 이름 오버레이 */
+.story-flow-ridi .card-info-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   padding: 20px;
-  z-index: 10;
+  z-index: 8;
 }
 
-/* 이름 + 나이 */
-.card-name-age {
+.story-flow-ridi .card-name-row {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
-.card-name-age h2 {
-  font-size: 28px;
-  font-weight: 700;
+.story-flow-ridi .card-name {
+  font-size: 26px;
+  font-weight: 800;
   color: #fff;
   margin: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
 }
 
-.card-age {
-  font-size: 24px;
-  font-weight: 400;
-  color: #fff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+.story-flow-ridi .card-age {
+  font-size: 20px;
+  color: rgba(255,255,255,0.8);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
 }
 
-/* 직업 + 키 */
-.card-subtitle {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 12px;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+.story-flow-ridi .card-meta {
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  margin: 0;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
 }
 
-.card-subtitle span {
-  display: inline;
+/* 카드 컨텐츠 */
+.story-flow-ridi .card-content {
+  padding: 20px;
+  background: #0f0f0f;
 }
 
 /* 태그 */
-.card-tags {
+.story-flow-ridi .card-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
-.card-tag {
-  padding: 5px 12px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
+.story-flow-ridi .card-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
   font-size: 12px;
-  color: #fff;
-  font-weight: 500;
+  color: #FFFFFF;
 }
 
-/* 상세 정보 (카드 하단) */
-.character-detail-below {
-  padding: 0 20px 20px;
-}
-
-.character-detail-below .info-section {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+/* 정보 섹션 */
+.story-flow-ridi .card-section {
+  margin-bottom: 16px;
   padding: 16px;
-  margin-bottom: 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
 }
 
-.character-detail-below .info-section h3 {
+.story-flow-ridi .card-section h4 {
   font-size: 16px;
-  color: #fff;
+  color: #FFFFFF;
   margin: 0 0 12px 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 700;
 }
 
-.character-detail-below .info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.character-detail-below .info-item {
+.story-flow-ridi .card-section p {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
+  color: #ccc;
+  line-height: 1.6;
+  margin: 0 0 8px 0;
+  white-space: pre-line;
 }
 
-.character-detail-below .info-item strong {
-  color: #ff69b4;
-  margin-right: 6px;
+/* 기본 정보(성격/외모/말투)는 프롬프트용으로 길게 써둔 설명이 많아
+   카드에는 요약(2줄)만 노출 - 성적 디테일/선호행동 등은 원래도 짧아 그대로 둠 */
+.story-flow-ridi .card-section:not(.sensitive) p {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
 }
 
-.character-detail-below .info-item.full-width {
-  grid-column: 1 / -1;
+/* 더보기를 누르면 2줄 요약을 풀고 전체 텍스트를 보여줌 */
+.story-flow-ridi .card-section.expanded p {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
 }
 
-/* 민감 정보 섹션 */
-.character-detail-below .sensitive-section {
-  background: rgba(255, 100, 100, 0.1);
-  border: 1px solid rgba(255, 100, 100, 0.2);
+.story-flow-ridi .card-section .btn-more {
+  margin-top: 4px;
+  padding: 4px 0 0;
 }
 
-/* 선호/비선호 행동 리스트 */
-.character-detail-below .action-list {
+.story-flow-ridi .card-section p:last-child {
+  margin-bottom: 0;
+}
+
+.story-flow-ridi .card-section strong {
+  color: #FFFFFF;
+  margin-right: 8px;
+}
+
+/* 라벨(성격/외모/체형/말투)과 설명을 위아래로 분리 - 긴 문장이 라벨과
+   한 줄에 붙어 흐르면 읽기 어려워서, 라벨은 짧은 헤더로 위에 두고
+   설명은 그 아래 별도 문단으로 좌측 정렬 */
+.story-flow-ridi .info-field {
+  margin-bottom: 14px;
+}
+
+.story-flow-ridi .info-field:last-of-type {
+  margin-bottom: 0;
+}
+
+.story-flow-ridi .info-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+
+.story-flow-ridi .info-value {
+  text-align: left;
+  margin: 0;
+}
+
+.story-flow-ridi .card-section.sensitive {
+  background: rgba(255, 87, 34, 0.08);
+  border: 1px solid rgba(255, 87, 34, 0.15);
+}
+
+.story-flow-ridi .card-section.sensitive h4 {
+  color: #ff7043;
+}
+
+.story-flow-ridi .card-section ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.character-detail-below .action-list li {
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
+.story-flow-ridi .card-section ul li {
+  padding: 6px 0;
   font-size: 14px;
+  color: #ccc;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-.character-detail-below .action-list li:last-child {
+.story-flow-ridi .card-section ul li:last-child {
   border-bottom: none;
 }
 
-.character-detail-below .action-list li::before {
+.story-flow-ridi .card-section ul li::before {
   content: "•";
   margin-right: 8px;
-  color: #ff69b4;
+  color: #F33B3E;
 }
 
-/* 기존 profile-images-gallery 숨기기 (Tinder 카드로 대체) */
-.profile-images-gallery {
-  display: none;
+/* ============================================
+   Start Button (3번째 이미지 스타일 - 심플)
+   ============================================ */
+.story-flow-ridi .start-section {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  background: #0f0f0f;
+  z-index: 100;
 }
 
-/* 기존 character-detail 숨기기 (새 레이아웃으로 대체) */
-.character-detail {
-  display: none;
+.story-flow-ridi .btn-start {
+  display: block;
+  width: 100%;
+  padding: 18px;
+  background: #F33B3E;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
 }
 
-/* 반응형 */
-@media (max-width: 480px) {
-  .tinder-card {
-    max-width: 100%;
-    border-radius: 0;
+.story-flow-ridi .btn-start:hover {
+  background: #d93a54;
+}
+
+.story-flow-ridi .btn-start:active {
+  transform: scale(0.98);
+}
+
+.story-flow-ridi .btn-restart-link {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  background: none;
+  border: none;
+  padding: 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: underline;
+  cursor: pointer;
+  text-align: center;
+}
+
+.story-flow-ridi .btn-restart-link:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (min-width: 600px) {
+  .story-flow-ridi {
+    max-width: 500px;
+    margin: 0 auto;
+    border-left: 1px solid rgba(255,255,255,0.05);
+    border-right: 1px solid rgba(255,255,255,0.05);
   }
   
-  .character-card-container {
-    padding: 0;
+  .story-flow-ridi .start-section {
+    max-width: 500px;
+    left: 50%;
+    transform: translateX(-50%);
   }
   
-  .card-name-age h2 {
-    font-size: 24px;
-  }
-  
-  .card-age {
-    font-size: 20px;
-  }
-  
-  .card-subtitle {
-    font-size: 14px;
-  }
-  
-  .card-tag {
-    font-size: 11px;
-    padding: 4px 10px;
+  .story-flow-ridi .card-image-area {
+    padding-top: 125%;
   }
 }

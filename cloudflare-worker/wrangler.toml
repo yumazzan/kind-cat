@@ -1,0 +1,7 @@
+name = "kindcat-gemini-proxy"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# 실제 Gemini API 키는 여기 적지 않습니다 - 배포 후
+# `npx wrangler secret put GEMINI_API_KEY` 명령으로 별도 등록합니다
+# (Cloudflare 서버에만 저장되고, 이 저장소/클라이언트 어디에도 노출되지 않음)
