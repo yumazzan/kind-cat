@@ -24,6 +24,7 @@ export function parseAIResponse(responseText) {
       narration: jsonData.narration || '',
       dialogues: extractDialogues(jsonData),
       scores: extractScoreChanges(jsonData),
+      newMilestone: jsonData.new_milestone || null,
       choices: jsonData.choices || [],
       triggeredKeywords: jsonData.triggered_keywords || [],
       sceneChange: jsonData.scene_change || null,
@@ -49,62 +50,178 @@ export function parseAIResponse(responseText) {
 // ============================================
 
 function extractJSON(text) {
-  // 방법 1: ```json ... ``` 블록 찾기
+  const candidates = [];
+
+  // 방법 1: ```json ... ``` 블록 (정상적으로 닫힌 경우)
   const jsonBlockMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
-  if (jsonBlockMatch) {
-    try {
-      return JSON.parse(jsonBlockMatch[1]);
-    } catch (e) {
-      console.warn('JSON 블록 파싱 실패, 다른 방법 시도');
-    }
-  }
+  if (jsonBlockMatch) candidates.push(jsonBlockMatch[1]);
 
-  // 방법 2: ``` ... ``` 블록 찾기
+  // 방법 2: ``` ... ``` 블록
   const codeBlockMatch = text.match(/```\s*([\s\S]*?)\s*```/);
-  if (codeBlockMatch) {
-    try {
-      return JSON.parse(codeBlockMatch[1]);
-    } catch (e) {
-      console.warn('코드 블록 파싱 실패, 다른 방법 시도');
-    }
+  if (codeBlockMatch) candidates.push(codeBlockMatch[1]);
+
+  // 방법 3: 마지막 { ... } 전체
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (jsonMatch) candidates.push(jsonMatch[0]);
+
+  // 방법 4: 응답이 잘려서 닫는 ``` 가 없는 경우 - 열린 펜스 이후 전체를 후보로
+  const openFenceMatch = text.match(/```json\s*([\s\S]*)$/);
+  if (openFenceMatch) candidates.push(openFenceMatch[1]);
+
+  // 방법 5: 첫 '{' 부터 끝까지 (닫는 '}' 조차 없이 잘린 경우 대비)
+  const firstBrace = text.indexOf('{');
+  if (firstBrace !== -1) candidates.push(text.slice(firstBrace));
+
+  for (const candidate of candidates) {
+    const parsed = tryParseJSON(candidate);
+    if (parsed) return parsed;
   }
 
-  // 방법 3: { ... } 전체 찾기
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    try {
-      return JSON.parse(jsonMatch[0]);
-    } catch (e) {
-      // JSON 수정 시도
-      const fixed = fixMalformedJSON(jsonMatch[0]);
-      if (fixed) {
-        try {
-          return JSON.parse(fixed);
-        } catch (e2) {
-          console.warn('수정된 JSON도 파싱 실패');
-        }
-      }
-    }
+  // 완전한 파싱이 전부 실패 - 응답이 중간에 잘렸을 가능성이 높으므로
+  // 완결된 필드/배열 원소만이라도 최대한 복구 시도
+  for (const candidate of candidates) {
+    const salvaged = salvagePartialJSON(candidate);
+    if (salvaged) return salvaged;
   }
 
   return null;
 }
 
-// 잘못된 JSON 수정 시도
-function fixMalformedJSON(jsonStr) {
-  let fixed = jsonStr;
-  
-  // 후행 쉼표 제거
-  fixed = fixed.replace(/,\s*}/g, '}');
-  fixed = fixed.replace(/,\s*]/g, ']');
-  
-  // 작은따옴표 → 큰따옴표
-  fixed = fixed.replace(/'/g, '"');
-  
-  // 줄바꿈 이스케이프
-  fixed = fixed.replace(/\n/g, '\\n');
-  
-  return fixed;
+function tryParseJSON(raw) {
+  if (!raw) return null;
+  const sanitized = sanitizeControlChars(raw);
+  const attempts = [raw, sanitized, fixTrailingCommas(sanitized)];
+  for (const attempt of attempts) {
+    try {
+      return JSON.parse(attempt);
+    } catch (e) {
+      // 다음 시도로 넘어감
+    }
+  }
+  return null;
+}
+
+function fixTrailingCommas(str) {
+  return str.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+}
+
+// 문자열 리터럴 "내부"의 raw 개행/탭 등 제어문자만 안전하게 이스케이프.
+// 예전 로직처럼 작은따옴표를 전부 큰따옴표로 바꾸는 식의 전면 치환은
+// 대사에 포함된 정상적인 작은따옴표까지 깨뜨려 오히려 파싱을 실패시켰기 때문에 사용하지 않음.
+function sanitizeControlChars(str) {
+  let result = '';
+  let inString = false;
+  let escapeNext = false;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (escapeNext) {
+      result += ch;
+      escapeNext = false;
+      continue;
+    }
+    if (ch === '\\' && inString) {
+      result += ch;
+      escapeNext = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      result += ch;
+      continue;
+    }
+    if (inString && (ch === '\n' || ch === '\r' || ch === '\t')) {
+      result += ch === '\n' ? '\\n' : ch === '\r' ? '\\r' : '\\t';
+      continue;
+    }
+    result += ch;
+  }
+  return result;
+}
+
+// 응답이 중간에 잘렸을 때, 완결된 필드/배열 원소만이라도 복구해서
+// "raw JSON 텍스트가 그대로 화면에 노출되는" 최악의 상황을 피한다.
+function salvagePartialJSON(raw) {
+  if (!raw) return null;
+  const sanitized = sanitizeControlChars(raw);
+  const result = {};
+
+  ['time', 'location'].forEach(field => {
+    const m = sanitized.match(new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
+    if (m) result[field] = m[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+  });
+
+  ['char_a_state', 'char_b_state'].forEach(field => {
+    const idx = sanitized.indexOf(`"${field}"`);
+    if (idx === -1) return;
+    const braceStart = sanitized.indexOf('{', idx);
+    if (braceStart === -1) return;
+    const objStr = extractBalanced(sanitized, braceStart, '{', '}');
+    if (objStr) {
+      try { result[field] = JSON.parse(objStr); } catch (e) { /* 이 필드는 포기 */ }
+    }
+  });
+
+  // beats 배열: 앞에서부터 완결된 원소만 순서대로 수집하고, 처음 잘린 원소에서 중단
+  const beatsIdx = sanitized.indexOf('"beats"');
+  if (beatsIdx !== -1) {
+    const arrStart = sanitized.indexOf('[', beatsIdx);
+    if (arrStart !== -1) {
+      const beats = [];
+      let cursor = arrStart + 1;
+      while (cursor < sanitized.length) {
+        const closeBeforeObj = sanitized.indexOf(']', cursor);
+        const objStart = sanitized.indexOf('{', cursor);
+        if (objStart === -1 || (closeBeforeObj !== -1 && closeBeforeObj < objStart)) break;
+        const objStr = extractBalanced(sanitized, objStart, '{', '}');
+        if (!objStr) break; // 닫는 괄호를 못 찾음 = 여기서 잘림, 이후 폐기
+        try {
+          beats.push(JSON.parse(objStr));
+        } catch (e) {
+          break;
+        }
+        cursor = objStart + objStr.length;
+      }
+      if (beats.length > 0) result.beats = beats;
+    }
+  }
+
+  const choicesIdx = sanitized.indexOf('"choices"');
+  if (choicesIdx !== -1) {
+    const arrStart = sanitized.indexOf('[', choicesIdx);
+    if (arrStart !== -1) {
+      const arrStr = extractBalanced(sanitized, arrStart, '[', ']');
+      if (arrStr) {
+        try { result.choices = JSON.parse(arrStr); } catch (e) { /* 잘렸으면 포기, 기본값(빈 배열) 사용 */ }
+      }
+    }
+  }
+
+  // beats나 time/location 중 뭐라도 복구됐을 때만 유효한 결과로 취급
+  if ((result.beats && result.beats.length > 0) || result.time || result.location) {
+    return result;
+  }
+  return null;
+}
+
+// start 위치의 openCh 로부터 짝이 맞는 closeCh 까지의 부분 문자열을 반환.
+// 문자열 리터럴 내부의 괄호는 무시(카운트하지 않음). 짝을 못 찾으면(=중간에 잘림) null.
+function extractBalanced(str, start, openCh, closeCh) {
+  let depth = 0;
+  let inString = false;
+  let escapeNext = false;
+  for (let i = start; i < str.length; i++) {
+    const ch = str[i];
+    if (escapeNext) { escapeNext = false; continue; }
+    if (ch === '\\' && inString) { escapeNext = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === openCh) depth++;
+    else if (ch === closeCh) {
+      depth--;
+      if (depth === 0) return str.slice(start, i + 1);
+    }
+  }
+  return null;
 }
 
 // ============================================
@@ -139,8 +256,6 @@ function extractDialogues(jsonData) {
 
 function extractScoreChanges(jsonData) {
   return {
-    affectionGongChange: parseScoreValue(jsonData.affection_gong_change || jsonData.affection_change || 0),
-    affectionSuChange: parseScoreValue(jsonData.affection_su_change || 0),
     excitementChange: parseScoreValue(jsonData.excitement_change || 0)
   };
 }
@@ -190,10 +305,9 @@ function createFallbackResponse(text) {
     narration: narration,
     dialogues: dialogues,
     scores: {
-      affectionGongChange: 0,
-      affectionSuChange: 0,
       excitementChange: 0
     },
+    newMilestone: null,
     choices: [],
     triggeredKeywords: [],
     sceneChange: null,

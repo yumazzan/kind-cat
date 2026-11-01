@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
+    <script>
+  // HashRouter 리다이렉트
+  if (window.location.pathname.endsWith('/kind-cat/') && !window.location.hash) {
+    window.location.replace(window.location.href + '#/');
+  }
+</script>
+
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/cat-icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="KIND CAT - BL 인터랙티브 픽션" />
     <title>KIND CAT</title>
